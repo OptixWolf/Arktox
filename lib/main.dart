@@ -8,15 +8,15 @@ class ArktoxApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<ThemeMode>(
-      future: Preferences.getThemeMode(),
+    return FutureBuilder<bool>(
+      future: Preferences.getDarkmode(),
       builder: (context, themeModeSnapshot) {
         final currentThemeMode = themeModeSnapshot.data ?? ThemeMode.system;
 
         return MaterialApp(
           title: 'Arktox',
           home: const Homepage(),
-          themeMode: currentThemeMode,
+          themeMode: currentThemeMode == true ? ThemeMode.dark : ThemeMode.light,
           theme: ThemeData.light(
             useMaterial3: true,
           ),
@@ -30,19 +30,19 @@ class ArktoxApp extends StatelessWidget {
 }
 
 class Preferences {
-  static const String themeModeKey = 'themeMode';
+  static const String darkmodeKey = 'darkmode';
   static const String platformKey = 'allPlatforms';
   static const String archivedKey = 'archived';
 
-  static Future<ThemeMode> getThemeMode() async {
+  static Future<bool> getDarkmode() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final int themeModeValue = prefs.getInt(themeModeKey) ?? 0;
-    return ThemeMode.values[themeModeValue];
+    final bool darkmodeValue = prefs.getBool(darkmodeKey) ?? true;
+    return darkmodeValue;
   }
 
-  static Future<void> setThemeMode(ThemeMode themeMode) async {
+  static Future<void> setDarkmode(bool darkmodeValue) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(themeModeKey, themeMode.index);
+    await prefs.setBool(darkmodeKey, darkmodeValue);
   }
 
   static Future<bool> getPlatformSetting() async {
@@ -78,7 +78,52 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   int currentPageIndex = 0;
 
+  bool selectedPlatformValue = true;
+  bool selectedArchivedValue = true;
+  bool selectedDarkmodeValue = true;
+
   @override
+    void initState() {
+    super.initState();
+    Preferences.getPlatformSetting().then((platformValue) {
+      setState(() {
+        selectedPlatformValue = platformValue;
+      });
+    });
+    Preferences.getArchivedSetting().then((archivedValue) {
+      setState(() {
+        selectedArchivedValue = archivedValue;
+      });
+    });
+    Preferences.getDarkmode().then((darkmodeValue) {
+      setState(() {
+        selectedDarkmodeValue = darkmodeValue;
+      });
+    });
+  }
+
+    void toggleSwitchPlatform() {
+    setState(() {
+      selectedPlatformValue = !selectedPlatformValue;
+      Preferences.setPlatformSetting(selectedPlatformValue);
+    });
+  }
+
+  void toggleSwitchArchived() {
+    setState(() {
+      selectedArchivedValue = !selectedArchivedValue;
+      Preferences.setArchivedSetting(selectedArchivedValue);
+    });
+  }
+
+  void toggleSwitchDarkmode() {
+    setState(() {
+      selectedDarkmodeValue = !selectedDarkmodeValue;
+      Preferences.setDarkmode(selectedDarkmodeValue);
+      runApp(ArktoxApp());
+    });
+  }
+
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Scaffold(
@@ -125,7 +170,66 @@ class _HomepageState extends State<Homepage> {
         Container(),
 
         // Einstellungsseite
-        Container(),
+        Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+        children: [
+            const Row(children: [
+              SizedBox(width: 7),
+              Text('Einstellungen', style: TextStyle(fontSize: 50)),
+            ]),
+            const SizedBox(
+              height: 25,
+            ),
+            const Row(children: [
+              SizedBox(width: 7),
+              Text('Allgemeine Einstellungen', style: TextStyle(fontSize: 25)),
+            ]),
+            Card(
+                child: ListTile(
+              title: const Text('App Darstellung'),
+              subtitle: const Text(
+                  'Wenn deaktiviert, benutzt die App das helle Design'),
+              trailing: Switch(
+                value: selectedDarkmodeValue,
+                onChanged: (value) {
+                  toggleSwitchDarkmode();
+                },
+              ),
+            )),
+            Card(
+                child: ListTile(
+              title: const Text('Aktiviere alle Plattformen'),
+              subtitle: const Text(
+                  'Wenn deaktiviert, siehst du nur noch Inhalte für deine aktuelle Plattform'),
+              trailing: Switch(
+                value: selectedPlatformValue,
+                onChanged: (value) {
+                  toggleSwitchPlatform();
+                },
+              ),
+              onTap: () {
+                toggleSwitchPlatform();
+              },
+            )),
+            Card(
+                child: ListTile(
+              title: const Text('Verstecke Archivierte Einträge'),
+              subtitle:
+                  const Text('Wenn deaktiviert, siehst du Archivierte Einträge'),
+              trailing: Switch(
+                value: selectedArchivedValue,
+                onChanged: (value) {
+                  toggleSwitchArchived();
+                },
+              ),
+              onTap: () {
+                toggleSwitchArchived();
+              },
+            ))
+          ],
+        ),
+        )
       ][currentPageIndex],
     );
   }
