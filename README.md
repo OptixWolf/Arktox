@@ -8,6 +8,6 @@ In diesem Fall enthält die Datenbank Daten über andere großartige Projekte, d
 Außerdem bietet die Anwendung Skripte und Chats mit anderen Nutzern.
 
 ## English
-Archive is a Flutter application that reads and outputs data from a MongoDB database.
+Arktox is a Flutter application that reads and outputs data from a MongoDB database.
 In this case, the database contains data on other great projects that can be discovered.
 Furthermore, the application offers scripts and chats with other users
