@@ -9,7 +9,7 @@ class ArktoxApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<bool>(
-      future: Preferences.getDarkmode(),
+      future: Preferences.getPref('darkmode'),
       builder: (context, themeModeSnapshot) {
         final currentThemeMode = themeModeSnapshot.data ?? ThemeMode.system;
 
@@ -34,37 +34,15 @@ class Preferences {
   static const String platformKey = 'allPlatforms';
   static const String archivedKey = 'archived';
 
-  static Future<bool> getDarkmode() async {
+  static Future<bool> getPref(String key) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final bool darkmodeValue = prefs.getBool(darkmodeKey) ?? true;
-    return darkmodeValue;
+    final bool value = prefs.getBool(key) ?? true;
+    return value;
   }
 
-  static Future<void> setDarkmode(bool darkmodeValue) async {
+  static Future<void> setPref(String key ,bool value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(darkmodeKey, darkmodeValue);
-  }
-
-  static Future<bool> getPlatformSetting() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final bool platformValue = prefs.getBool(platformKey) ?? true;
-    return platformValue;
-  }
-
-  static Future<void> setPlatformSetting(bool platformValue) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(platformKey, platformValue);
-  }
-
-  static Future<bool> getArchivedSetting() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final bool archivedValue = prefs.getBool(archivedKey) ?? true;
-    return archivedValue;
-  }
-
-  static Future<void> setArchivedSetting(bool archivedValue) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(archivedKey, archivedValue);
+    await prefs.setBool(key, value);
   }
 }
 
@@ -85,17 +63,17 @@ class _HomepageState extends State<Homepage> {
   @override
     void initState() {
     super.initState();
-    Preferences.getPlatformSetting().then((platformValue) {
+      Preferences.getPref('allPlatforms').then((platformValue) {
       setState(() {
         selectedPlatformValue = platformValue;
       });
     });
-    Preferences.getArchivedSetting().then((archivedValue) {
+      Preferences.getPref('archived').then((archivedValue) {
       setState(() {
         selectedArchivedValue = archivedValue;
       });
     });
-    Preferences.getDarkmode().then((darkmodeValue) {
+      Preferences.getPref('darkmode').then((darkmodeValue) {
       setState(() {
         selectedDarkmodeValue = darkmodeValue;
       });
@@ -105,21 +83,21 @@ class _HomepageState extends State<Homepage> {
     void toggleSwitchPlatform() {
     setState(() {
       selectedPlatformValue = !selectedPlatformValue;
-      Preferences.setPlatformSetting(selectedPlatformValue);
+      Preferences.setPref('allPlatforms', selectedPlatformValue);
     });
   }
 
   void toggleSwitchArchived() {
     setState(() {
       selectedArchivedValue = !selectedArchivedValue;
-      Preferences.setArchivedSetting(selectedArchivedValue);
+      Preferences.setPref('archived', selectedArchivedValue);
     });
   }
 
   void toggleSwitchDarkmode() {
     setState(() {
       selectedDarkmodeValue = !selectedDarkmodeValue;
-      Preferences.setDarkmode(selectedDarkmodeValue);
+      Preferences.setPref('darkmode', selectedDarkmodeValue);
       runApp(ArktoxApp());
     });
   }
