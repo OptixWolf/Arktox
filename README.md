@@ -2,6 +2,9 @@
 
 [![](https://img.shields.io/discord/1107109693165416588?logo=discord)](https://discord.com/invite/KW7GWQfKaj)
 
+> [!WARNING]
+> Das Projekt befindet sich noch in der Entwicklungsphase
+
 ## Deutsch
 Arktox ist eine Flutter-Anwendung, die Daten aus einer MySQL-Datenbank liest und ausgibt.
 In diesem Fall enthält die Datenbank Daten über andere großartige Projekte, die entdeckt werden können.
