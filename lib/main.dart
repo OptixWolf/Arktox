@@ -1,7 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mysql_client/mysql_client.dart';
+import 'package:http/http.dart' as http;
+import 'keys.dart';
 
-void main() => runApp(const ArktoxApp());
+void main() {
+  DatabaseService().connect();
+  runApp(const ArktoxApp());
+}
+
+class DatabaseService {
+  late MySQLConnection _conn;
+
+  Future<void> connect() async {
+    _conn = await MySQLConnection.createConnection(
+      host: host,
+      port: port,
+      userName: user,
+      password: password,
+      databaseName: databaseName,
+      secure: false,
+    );
+
+    await _conn.connect();
+    print('Datenbank verbunden');
+  }
+
+  Future<void> disconnect() async {
+    await _conn.close();
+    print('Datenbank getrennt');
+  }
+
+  Future<List<Map<String, dynamic>>> executeQuery(String query) async {
+    var result = await _conn.execute(query);
+    return result.rows.map((row) => row.assoc()).toList();
+  }
+}
 
 class ArktoxApp extends StatelessWidget {
   const ArktoxApp({super.key});
@@ -16,7 +50,8 @@ class ArktoxApp extends StatelessWidget {
         return MaterialApp(
           title: 'Arktox',
           home: const Homepage(),
-          themeMode: currentThemeMode == true ? ThemeMode.dark : ThemeMode.light,
+          themeMode:
+              currentThemeMode == true ? ThemeMode.dark : ThemeMode.light,
           theme: ThemeData.light(
             useMaterial3: true,
           ),
@@ -40,7 +75,7 @@ class Preferences {
     return value;
   }
 
-  static Future<void> setPref(String key ,bool value) async {
+  static Future<void> setPref(String key, bool value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(key, value);
   }
@@ -61,26 +96,26 @@ class _HomepageState extends State<Homepage> {
   bool selectedDarkmodeValue = true;
 
   @override
-    void initState() {
+  void initState() {
     super.initState();
-      Preferences.getPref('allPlatforms').then((platformValue) {
+    Preferences.getPref('allPlatforms').then((platformValue) {
       setState(() {
         selectedPlatformValue = platformValue;
       });
     });
-      Preferences.getPref('archived').then((archivedValue) {
+    Preferences.getPref('archived').then((archivedValue) {
       setState(() {
         selectedArchivedValue = archivedValue;
       });
     });
-      Preferences.getPref('darkmode').then((darkmodeValue) {
+    Preferences.getPref('darkmode').then((darkmodeValue) {
       setState(() {
         selectedDarkmodeValue = darkmodeValue;
       });
     });
   }
 
-    void toggleSwitchPlatform() {
+  void toggleSwitchPlatform() {
     setState(() {
       selectedPlatformValue = !selectedPlatformValue;
       Preferences.setPref('allPlatforms', selectedPlatformValue);
@@ -134,7 +169,7 @@ class _HomepageState extends State<Homepage> {
           NavigationDestination(
             icon: Icon(Icons.settings),
             label: 'Einstellungen',
-              ),
+          ),
         ],
       ),
       body: <Widget>[
@@ -151,62 +186,63 @@ class _HomepageState extends State<Homepage> {
         Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
-        children: [
-            const Row(children: [
-              SizedBox(width: 7),
-              Text('Einstellungen', style: TextStyle(fontSize: 50)),
-            ]),
-            const SizedBox(
-              height: 25,
-            ),
-            const Row(children: [
-              SizedBox(width: 7),
-              Text('Allgemeine Einstellungen', style: TextStyle(fontSize: 25)),
-            ]),
-            Card(
-                child: ListTile(
-              title: const Text('App Darstellung'),
-              subtitle: const Text(
-                  'Wenn deaktiviert, benutzt die App das helle Design'),
-              trailing: Switch(
-                value: selectedDarkmodeValue,
-                onChanged: (value) {
-                  toggleSwitchDarkmode();
-                },
+            children: [
+              const Row(children: [
+                SizedBox(width: 7),
+                Text('Einstellungen', style: TextStyle(fontSize: 50)),
+              ]),
+              const SizedBox(
+                height: 25,
               ),
-            )),
-            Card(
-                child: ListTile(
-              title: const Text('Aktiviere alle Plattformen'),
-              subtitle: const Text(
-                  'Wenn deaktiviert, siehst du nur noch Inhalte für deine aktuelle Plattform'),
-              trailing: Switch(
-                value: selectedPlatformValue,
-                onChanged: (value) {
+              const Row(children: [
+                SizedBox(width: 7),
+                Text('Allgemeine Einstellungen',
+                    style: TextStyle(fontSize: 25)),
+              ]),
+              Card(
+                  child: ListTile(
+                title: const Text('App Darstellung'),
+                subtitle: const Text(
+                    'Wenn deaktiviert, benutzt die App das helle Design'),
+                trailing: Switch(
+                  value: selectedDarkmodeValue,
+                  onChanged: (value) {
+                    toggleSwitchDarkmode();
+                  },
+                ),
+              )),
+              Card(
+                  child: ListTile(
+                title: const Text('Aktiviere alle Plattformen'),
+                subtitle: const Text(
+                    'Wenn deaktiviert, siehst du nur noch Inhalte für deine aktuelle Plattform'),
+                trailing: Switch(
+                  value: selectedPlatformValue,
+                  onChanged: (value) {
+                    toggleSwitchPlatform();
+                  },
+                ),
+                onTap: () {
                   toggleSwitchPlatform();
                 },
-              ),
-              onTap: () {
-                toggleSwitchPlatform();
-              },
-            )),
-            Card(
-                child: ListTile(
-              title: const Text('Verstecke Archivierte Einträge'),
-              subtitle:
-                  const Text('Wenn deaktiviert, siehst du Archivierte Einträge'),
-              trailing: Switch(
-                value: selectedArchivedValue,
-                onChanged: (value) {
+              )),
+              Card(
+                  child: ListTile(
+                title: const Text('Verstecke Archivierte Einträge'),
+                subtitle: const Text(
+                    'Wenn deaktiviert, siehst du Archivierte Einträge'),
+                trailing: Switch(
+                  value: selectedArchivedValue,
+                  onChanged: (value) {
+                    toggleSwitchArchived();
+                  },
+                ),
+                onTap: () {
                   toggleSwitchArchived();
                 },
-              ),
-              onTap: () {
-                toggleSwitchArchived();
-              },
-            ))
-          ],
-        ),
+              ))
+            ],
+          ),
         )
       ][currentPageIndex],
     );
