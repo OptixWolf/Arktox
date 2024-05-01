@@ -36,7 +36,6 @@ class ArktoxApp extends StatelessWidget {
 
 class Preferences {
   static const String darkmodeKey = 'darkmode';
-  static const String platformKey = 'allPlatforms';
   static const String archivedKey = 'archived';
 
   static Future<bool> getPref(String key) async {
@@ -61,18 +60,12 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   int currentPageIndex = 0;
 
-  bool selectedPlatformValue = true;
   bool selectedArchivedValue = true;
   bool selectedDarkmodeValue = true;
 
   @override
   void initState() {
     super.initState();
-    Preferences.getPref('allPlatforms').then((platformValue) {
-      setState(() {
-        selectedPlatformValue = platformValue;
-      });
-    });
     Preferences.getPref('archived').then((archivedValue) {
       setState(() {
         selectedArchivedValue = archivedValue;
@@ -82,13 +75,6 @@ class _HomepageState extends State<Homepage> {
       setState(() {
         selectedDarkmodeValue = darkmodeValue;
       });
-    });
-  }
-
-  void toggleSwitchPlatform() {
-    setState(() {
-      selectedPlatformValue = !selectedPlatformValue;
-      Preferences.setPref('allPlatforms', selectedPlatformValue);
     });
   }
 
@@ -180,21 +166,6 @@ class _HomepageState extends State<Homepage> {
                     toggleSwitchDarkmode();
                   },
                 ),
-              )),
-              Card(
-                  child: ListTile(
-                title: const Text('Aktiviere alle Plattformen'),
-                subtitle: const Text(
-                    'Wenn deaktiviert, siehst du nur noch Inhalte für deine aktuelle Plattform'),
-                trailing: Switch(
-                  value: selectedPlatformValue,
-                  onChanged: (value) {
-                    toggleSwitchPlatform();
-                  },
-                ),
-                onTap: () {
-                  toggleSwitchPlatform();
-                },
               )),
               Card(
                   child: ListTile(
