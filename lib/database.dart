@@ -25,7 +25,9 @@ class DatabaseService {
   }
 
   Future<List<Map<String, dynamic>>> executeQuery(String query) async {
+    await connect();
     var result = await _conn.execute(query);
+    await disconnect();
     return result.rows.map((row) => row.assoc()).toList();
   }
 }

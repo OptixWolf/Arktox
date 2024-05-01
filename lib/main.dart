@@ -1,10 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'database.dart';
+import 'dart:convert';
+import 'dart:io';
 
-void main() {
-  DatabaseService().connect();
-  runApp(const ArktoxApp());
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:crypto/crypto.dart';
+import 'database.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
+
+void main() async {
+  runApp(Phoenix(child: ArktoxApp()));
 }
 
 class ArktoxApp extends StatelessWidget {
@@ -35,9 +40,6 @@ class ArktoxApp extends StatelessWidget {
 }
 
 class Preferences {
-  static const String darkmodeKey = 'darkmode';
-  static const String archivedKey = 'archived';
-
   static Future<bool> getPref(String key) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final bool value = prefs.getBool(key) ?? true;
@@ -47,6 +49,17 @@ class Preferences {
   static Future<void> setPref(String key, bool value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(key, value);
+  }
+
+  static Future<String> getPrefString(String key) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String value = prefs.getString(key) ?? '';
+    return value;
+  }
+
+  static Future<void> setPrefString(String key, String value) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(key, value);
   }
 }
 
@@ -62,6 +75,9 @@ class _HomepageState extends State<Homepage> {
 
   bool selectedArchivedValue = true;
   bool selectedDarkmodeValue = true;
+  String email = '';
+  String passwordHash = '';
+  bool loggedIn = false;
 
   @override
   void initState() {
@@ -74,6 +90,23 @@ class _HomepageState extends State<Homepage> {
     Preferences.getPref('darkmode').then((darkmodeValue) {
       setState(() {
         selectedDarkmodeValue = darkmodeValue;
+      });
+    });
+    Preferences.getPrefString('email').then((emailValue) {
+      Preferences.getPrefString('passwordHash').then((passwordHashValue) {
+        email = emailValue;
+        print(emailValue);
+        passwordHash = passwordHashValue;
+        print(passwordHashValue);
+        var result = DatabaseService()
+            .executeQuery(
+                'SELECT user_id FROM nutzerdaten WHERE email = \'$emailValue\' AND password_hash = \'$passwordHashValue\'')
+            .then((result) {
+          if (result.isNotEmpty) {
+            loggedIn = true;
+            print(result.first);
+          }
+        });
       });
     });
   }
@@ -89,7 +122,7 @@ class _HomepageState extends State<Homepage> {
     setState(() {
       selectedDarkmodeValue = !selectedDarkmodeValue;
       Preferences.setPref('darkmode', selectedDarkmodeValue);
-      runApp(ArktoxApp());
+      Phoenix.rebirth(context);
     });
   }
 
@@ -141,51 +174,167 @@ class _HomepageState extends State<Homepage> {
         // Einstellungsseite
         Padding(
           padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              const Row(children: [
-                SizedBox(width: 7),
-                Text('Einstellungen', style: TextStyle(fontSize: 50)),
-              ]),
-              const SizedBox(
-                height: 25,
-              ),
-              const Row(children: [
-                SizedBox(width: 7),
-                Text('Allgemeine Einstellungen',
-                    style: TextStyle(fontSize: 25)),
-              ]),
-              Card(
-                  child: ListTile(
-                title: const Text('App Darstellung'),
-                subtitle: const Text(
-                    'Wenn deaktiviert, benutzt die App das helle Design'),
-                trailing: Switch(
-                  value: selectedDarkmodeValue,
-                  onChanged: (value) {
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const Row(children: [
+                  SizedBox(width: 7),
+                  Text('Einstellungen', style: TextStyle(fontSize: 50)),
+                ]),
+                const SizedBox(
+                  height: 25,
+                ),
+                const Row(children: [
+                  SizedBox(width: 7),
+                  Text('Konto Einstellungen', style: TextStyle(fontSize: 25)),
+                ]),
+                Card(
+                    child: ListTile(
+                  title: Text(loggedIn ? 'Abmelden' : 'Anmelden'),
+                  subtitle: Text(loggedIn
+                      ? 'Aktuell angemeldet mit: $email'
+                      : 'Aktuell nicht angemeldet'),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.arrow_right),
+                    onPressed: () {
+                      if (loggedIn) {
+                        Preferences.setPrefString('email', '');
+                        Preferences.setPrefString('passwordHash', '');
+                        Phoenix.rebirth(context);
+                      } else {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => LoginPage()));
+                      }
+                    },
+                  ),
+                )),
+                const SizedBox(
+                  height: 25,
+                ),
+                const Row(children: [
+                  SizedBox(width: 7),
+                  Text('Allgemeine Einstellungen',
+                      style: TextStyle(fontSize: 25)),
+                ]),
+                Card(
+                    child: ListTile(
+                  title: const Text('Dark Mode'),
+                  subtitle: const Text(
+                      'Wenn deaktiviert, benutzt die App das helle Design'),
+                  trailing: Switch(
+                    value: selectedDarkmodeValue,
+                    onChanged: (value) {
+                      toggleSwitchDarkmode();
+                    },
+                  ),
+                  onTap: () {
                     toggleSwitchDarkmode();
                   },
-                ),
-              )),
-              Card(
-                  child: ListTile(
-                title: const Text('Verstecke Archivierte Einträge'),
-                subtitle: const Text(
-                    'Wenn deaktiviert, siehst du Archivierte Einträge'),
-                trailing: Switch(
-                  value: selectedArchivedValue,
-                  onChanged: (value) {
+                )),
+                Card(
+                    child: ListTile(
+                  title: const Text('Verstecke Archivierte Einträge'),
+                  subtitle: const Text(
+                      'Wenn deaktiviert, siehst du Archivierte Einträge'),
+                  trailing: Switch(
+                    value: selectedArchivedValue,
+                    onChanged: (value) {
+                      toggleSwitchArchived();
+                    },
+                  ),
+                  onTap: () {
                     toggleSwitchArchived();
                   },
-                ),
-                onTap: () {
-                  toggleSwitchArchived();
-                },
-              ))
-            ],
+                ))
+              ],
+            ),
           ),
         )
       ][currentPageIndex],
+    );
+  }
+}
+
+class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    String email = '';
+    Digest passwordHashDigest = sha256.convert(utf8.encode(''));
+    String passwordHash = '';
+
+    return Scaffold(
+      body: Padding(
+        padding: EdgeInsets.all(20.0),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                TextField(
+                  onChanged: (value) => email = value,
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    hintText: 'Gib hier deine Email ein',
+                    prefixIcon: Icon(Icons.email),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  onChanged: (value) =>
+                      passwordHashDigest = sha256.convert(utf8.encode(value)),
+                  decoration: const InputDecoration(
+                    labelText: 'Passwort',
+                    hintText: 'Gib hier ein sicheres Passwort ein',
+                    prefixIcon: Icon(Icons.password),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: MaterialButton(
+                        onPressed: () {
+                          passwordHash = passwordHashDigest.toString();
+                          DatabaseService()
+                              .executeQuery(
+                                  'SELECT user_id FROM nutzerdaten WHERE email = \'$email\' AND password_hash = \'$passwordHash\'')
+                              .then((result) {
+                            if (result.isNotEmpty) {
+                              Preferences.setPrefString('email', email);
+                              Preferences.setPrefString(
+                                  'passwordHash', passwordHash);
+                              Phoenix.rebirth(context);
+                            }
+                          });
+                        },
+                        color: Colors.blue,
+                        child: Text('Anmelden'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: MaterialButton(
+                        onPressed: () {
+                          //
+                        },
+                        color: Colors.grey,
+                        child: Text('Registrieren'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
