@@ -1,40 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:mysql_client/mysql_client.dart';
-import 'package:http/http.dart' as http;
-import 'keys.dart';
+import 'database.dart';
 
 void main() {
   DatabaseService().connect();
   runApp(const ArktoxApp());
-}
-
-class DatabaseService {
-  late MySQLConnection _conn;
-
-  Future<void> connect() async {
-    _conn = await MySQLConnection.createConnection(
-      host: host,
-      port: port,
-      userName: user,
-      password: password,
-      databaseName: databaseName,
-      secure: false,
-    );
-
-    await _conn.connect();
-    print('Datenbank verbunden');
-  }
-
-  Future<void> disconnect() async {
-    await _conn.close();
-    print('Datenbank getrennt');
-  }
-
-  Future<List<Map<String, dynamic>>> executeQuery(String query) async {
-    var result = await _conn.execute(query);
-    return result.rows.map((row) => row.assoc()).toList();
-  }
 }
 
 class ArktoxApp extends StatelessWidget {
