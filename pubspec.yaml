@@ -9,6 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+    
   flutter_phoenix: ^1.1.1
   http: ^1.2.1
   mysql_client: ^0.0.27
@@ -21,3 +22,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+  - assets/default_banner.jpg
