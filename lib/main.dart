@@ -244,6 +244,7 @@ class _HomepageState extends State<Homepage> {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => ProfilePage(
                                   profile_id: own_profile_id,
+                                  own_profile_id: own_profile_id,
                                 )));
                       },
                     ),
@@ -251,6 +252,7 @@ class _HomepageState extends State<Homepage> {
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => ProfilePage(
                                 profile_id: own_profile_id,
+                                own_profile_id: own_profile_id,
                               )));
                     },
                   )),
@@ -390,15 +392,93 @@ class LoginPage extends StatelessWidget {
   }
 }
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
+  final int own_profile_id;
   final int profile_id;
 
-  const ProfilePage({super.key, required this.profile_id});
+  const ProfilePage(
+      {super.key, required this.own_profile_id, required this.profile_id});
+
+  @override
+  ProfilePageState createState() => ProfilePageState();
+}
+
+class ProfilePageState extends State<ProfilePage> {
+  int profileid = -1;
+  int own_profileid = -1;
+  bool following = false;
+  int profile_follower_count = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    profileid = widget.profile_id;
+    own_profileid = widget.own_profile_id;
+
+    DatabaseService()
+        .executeQuery(
+            'SELECT follower_id FROM follower WHERE from_profile_id = $own_profileid AND to_profile_id = $profileid')
+        .then(
+      (value) {
+        if (value.isNotEmpty && value.first.isNotEmpty) {
+          setState(() {
+            following = true;
+          });
+        }
+      },
+    );
+
+    DatabaseService()
+        .executeQuery(
+            'SELECT COUNT(follower_id) FROM follower WHERE to_profile_id = $profileid')
+        .then(
+      (value) {
+        if (value.isNotEmpty && value.first.isNotEmpty) {
+          setState(() {
+            profile_follower_count =
+                int.parse(value.first['COUNT(follower_id)']);
+          });
+        }
+      },
+    );
+  }
 
   Future<List<Map<String, dynamic>>> getProfileDetails() async {
     var result = await DatabaseService()
-        .executeQuery('SELECT * FROM profil WHERE profile_id = $profile_id');
-    return result;
+        .executeQuery('SELECT * FROM profil WHERE profile_id = $profileid');
+    return (result);
+  }
+
+  Future<bool> changeFollowStatus() async {
+    var result = await DatabaseService().executeQuery(
+        'SELECT follower_id FROM follower WHERE from_profile_id = $own_profileid AND to_profile_id = $profileid');
+
+    if (result.isNotEmpty && result.first.isNotEmpty) {
+      var follower_id = result.first['follower_id'];
+      DatabaseService().executeQuery(
+          'DELETE FROM follower WHERE follower_id = $follower_id');
+      return false;
+    } else {
+      DatabaseService().executeQuery(
+          'INSERT INTO follower(from_profile_id, to_profile_id) VALUES($own_profileid, $profileid)');
+      return true;
+    }
+  }
+
+  void getNewFollowerCount() {
+    DatabaseService()
+        .executeQuery(
+            'SELECT COUNT(follower_id) FROM follower WHERE to_profile_id = $profileid')
+        .then(
+      (value) {
+        if (value.isNotEmpty && value.first.isNotEmpty) {
+          setState(() {
+            profile_follower_count =
+                int.parse(value.first['COUNT(follower_id)']);
+          });
+        }
+      },
+    );
   }
 
   @override
@@ -461,6 +541,27 @@ class ProfilePage extends StatelessWidget {
                           ),
                           title: Text(snapshot.data?.first['username']),
                           subtitle: Text(snapshot.data?.first['about_me']),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: following
+                                    ? Icon(Icons.favorite)
+                                    : Icon(Icons.heart_broken),
+                                onPressed: () {
+                                  changeFollowStatus().then(
+                                    (value) {
+                                      setState(() {
+                                        following = value;
+                                        getNewFollowerCount();
+                                      });
+                                    },
+                                  );
+                                },
+                              ),
+                              Text('$profile_follower_count Follower'),
+                            ],
+                          ),
                         ),
                       ),
                     ],
