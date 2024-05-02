@@ -209,6 +209,10 @@ class _HomepageState extends State<Homepage> {
             label: 'Archiv',
           ),
           NavigationDestination(
+            icon: Icon(Icons.search),
+            label: 'Suche',
+          ),
+          NavigationDestination(
             icon: Badge(
               label: Text('1337'),
               child: Icon(Icons.messenger_sharp),
@@ -226,6 +230,9 @@ class _HomepageState extends State<Homepage> {
         Container(),
 
         /// Notifications page
+        Container(),
+
+        /// Search page
         Container(),
 
         /// Messages page
