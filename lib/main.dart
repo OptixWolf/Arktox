@@ -81,6 +81,7 @@ class _HomepageState extends State<Homepage> {
   bool loggedIn = false;
   int own_profile_id = -1;
   int own_user_id = -1;
+  List<String> contacts = [];
 
   @override
   void initState() {
@@ -119,6 +120,46 @@ class _HomepageState extends State<Homepage> {
               },
             );
             print(result.first);
+
+            DatabaseService()
+                .executeQuery('SELECT profile_id FROM profil')
+                .then((users) {
+              if (users.isNotEmpty) {
+                DatabaseService()
+                    .executeQuery('SELECT * FROM follower')
+                    .then((follower) {
+                  if (follower.isNotEmpty) {
+                    for (var user in users) {
+                      if (user['profile_id'] != own_profile_id.toString()) {
+                        print(user);
+                        String current_user = user['profile_id'];
+                        bool con1 = false;
+                        bool con2 = false;
+                        for (var follow in follower) {
+                          print(follow);
+                          if (follow['from_profile_id'] ==
+                                  own_profile_id.toString() &&
+                              follow['to_profile_id'] == current_user) {
+                            con1 = true;
+                          }
+                          if (follow['from_profile_id'] == current_user &&
+                              follow['to_profile_id'] ==
+                                  own_profile_id.toString()) {
+                            con2 = true;
+                          }
+                          if (con1 && con2) {
+                            if (!contacts.contains(current_user)) {
+                              contacts.add(current_user);
+                            }
+                          }
+                        }
+                      }
+                    }
+                    print(contacts);
+                  }
+                });
+              }
+            });
           }
         });
       });
@@ -138,6 +179,11 @@ class _HomepageState extends State<Homepage> {
       Preferences.setPref('darkmode', selectedDarkmodeValue);
       Phoenix.rebirth(context);
     });
+  }
+
+  Future<List<Map<String, dynamic>>> getProfileDetails() async {
+    var results = await DatabaseService().executeQuery('SELECT * FROM profil');
+    return results;
   }
 
   Widget build(BuildContext context) {
@@ -183,7 +229,101 @@ class _HomepageState extends State<Homepage> {
         Container(),
 
         /// Messages page
-        Container(),
+        FutureBuilder(
+            future: getProfileDetails(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Container();
+              } else if (snapshot.hasData) {
+                return Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      const Row(children: [
+                        SizedBox(width: 7),
+                        Text('Nachrichten', style: TextStyle(fontSize: 50)),
+                      ]),
+                      const SizedBox(
+                        height: 25,
+                      ),
+                      const Row(children: [
+                        SizedBox(width: 7),
+                        Text('Kontake:', style: TextStyle(fontSize: 25)),
+                      ]),
+                      Visibility(
+                        visible: contacts.isEmpty || snapshot.data!.isEmpty,
+                        child: const Card(
+                          child: ListTile(
+                            title: Text(
+                                'Keine Kontakte\nUm jemanden hinzuzufügen müsst ihr euch gegenseitig folgen'),
+                          ),
+                        ),
+                      ),
+                      Visibility(
+                        visible:
+                            contacts.isNotEmpty && snapshot.data!.isNotEmpty,
+                        child: Expanded(
+                          child: ListView.builder(
+                            itemCount: contacts.length,
+                            itemBuilder: (context, index) {
+                              String username = '';
+                              String profilbild_link = '';
+
+                              for (var element in snapshot.data!) {
+                                if (element["profile_id"] == contacts[index]) {
+                                  username = element["username"];
+                                  profilbild_link = element[
+                                          "profilbild_link"] ??
+                                      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmHkj6-Tndku8K2387sMaBf2DaiwfBtHQw951-fc9zzA&s';
+                                }
+                              }
+
+                              return Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(5),
+                                  child: ListTile(
+                                    title: Text(username),
+                                    leading: CircleAvatar(
+                                      backgroundImage:
+                                          NetworkImage(profilbild_link),
+                                    ),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                            onPressed: () {
+                                              Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          ProfilePage(
+                                                              own_profile_id:
+                                                                  own_profile_id,
+                                                              profile_id: int
+                                                                  .parse(contacts[
+                                                                      index]))));
+                                            },
+                                            icon: const Icon(Icons.person)),
+                                        IconButton(
+                                            onPressed: () {},
+                                            icon: const Icon(Icons.chat))
+                                      ],
+                                    ),
+                                    onTap: () {},
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              throw ();
+            }),
 
         // Einstellungsseite
         Padding(
@@ -449,7 +589,7 @@ class ProfilePageState extends State<ProfilePage> {
     return (result);
   }
 
-  Future<bool> changeFollowStatus() async {
+  void changeFollowStatus() async {
     var result = await DatabaseService().executeQuery(
         'SELECT follower_id FROM follower WHERE from_profile_id = $own_profileid AND to_profile_id = $profileid');
 
@@ -457,28 +597,18 @@ class ProfilePageState extends State<ProfilePage> {
       var follower_id = result.first['follower_id'];
       DatabaseService().executeQuery(
           'DELETE FROM follower WHERE follower_id = $follower_id');
-      return false;
+      setState(() {
+        following = false;
+        profile_follower_count = profile_follower_count - 1;
+      });
     } else {
       DatabaseService().executeQuery(
           'INSERT INTO follower(from_profile_id, to_profile_id) VALUES($own_profileid, $profileid)');
-      return true;
+      setState(() {
+        following = true;
+        profile_follower_count = profile_follower_count + 1;
+      });
     }
-  }
-
-  void getNewFollowerCount() {
-    DatabaseService()
-        .executeQuery(
-            'SELECT COUNT(follower_id) FROM follower WHERE to_profile_id = $profileid')
-        .then(
-      (value) {
-        if (value.isNotEmpty && value.first.isNotEmpty) {
-          setState(() {
-            profile_follower_count =
-                int.parse(value.first['COUNT(follower_id)']);
-          });
-        }
-      },
-    );
   }
 
   @override
@@ -509,21 +639,15 @@ class ProfilePageState extends State<ProfilePage> {
                           width: double.infinity,
                           height: 200.0,
                           child: Image.network(
-                            snapshot.data?.first['profilbanner_link'],
+                            snapshot.data?.first['profilbanner_link'] ??
+                                'https://cdn.discordapp.com/banners/530832230885621780/046f40dae525cd2a7d23bb106a37c250.webp?size=1024&format=webp&width=0&height=256',
                             fit: BoxFit.cover,
                             loadingBuilder: (context, child, loadingProgress) {
                               if (loadingProgress == null) return child;
                               return const CircularProgressIndicator();
                             },
                             errorBuilder: (context, error, stackTrace) =>
-                                SizedBox(
-                              width: double.infinity,
-                              height: 200.0,
-                              child: Image.asset(
-                                'assets/default_banner.jpg',
-                                fit: BoxFit.cover,
-                              ),
-                            ),
+                                const Text('Bild konnte nicht geladen werden'),
                           ),
                         ),
                       ),
@@ -536,27 +660,22 @@ class ProfilePageState extends State<ProfilePage> {
                         ),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundImage: NetworkImage(
-                                snapshot.data?.first['profilbild_link']),
+                            backgroundImage: NetworkImage(snapshot
+                                    .data?.first['profilbild_link'] ??
+                                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmHkj6-Tndku8K2387sMaBf2DaiwfBtHQw951-fc9zzA&s'),
                           ),
                           title: Text(snapshot.data?.first['username']),
-                          subtitle: Text(snapshot.data?.first['about_me']),
+                          subtitle: Text(snapshot.data?.first['about_me'] ??
+                              'Willkommen auf meinem Profil!'),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
                                 icon: following
                                     ? Icon(Icons.favorite)
-                                    : Icon(Icons.heart_broken),
+                                    : Icon(Icons.favorite_outline),
                                 onPressed: () {
-                                  changeFollowStatus().then(
-                                    (value) {
-                                      setState(() {
-                                        following = value;
-                                        getNewFollowerCount();
-                                      });
-                                    },
-                                  );
+                                  changeFollowStatus();
                                 },
                               ),
                               Text('$profile_follower_count Follower'),
