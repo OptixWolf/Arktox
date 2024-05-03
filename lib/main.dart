@@ -82,6 +82,8 @@ class _HomepageState extends State<Homepage> {
   int own_profile_id = -1;
   int own_user_id = -1;
   List<String> contacts = [];
+  List<Map<String, dynamic>> items = [];
+  List<Map<String, dynamic>> filteredItems = [];
 
   @override
   void initState() {
@@ -164,6 +166,12 @@ class _HomepageState extends State<Homepage> {
         });
       });
     });
+
+    DatabaseService().executeQuery('SELECT * FROM profil').then(
+      (value) {
+        items = value;
+      },
+    );
   }
 
   void toggleSwitchArchived() {
@@ -178,6 +186,21 @@ class _HomepageState extends State<Homepage> {
       selectedDarkmodeValue = !selectedDarkmodeValue;
       Preferences.setPref('darkmode', selectedDarkmodeValue);
       Phoenix.rebirth(context);
+    });
+  }
+
+  void filterItems(String query) {
+    setState(() {
+      filteredItems = items
+          .where((item) => item['username']
+              .toString()
+              .toLowerCase()
+              .contains(query.toLowerCase()))
+          .toList();
+
+      if (query.isEmpty) {
+        filteredItems.clear();
+      }
     });
   }
 
@@ -229,11 +252,71 @@ class _HomepageState extends State<Homepage> {
         /// Startseite
         Container(),
 
-        /// Notifications page
+        /// Archiv
         Container(),
 
         /// Search page
-        Container(),
+        Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              const Row(
+                children: [
+                  SizedBox(width: 7),
+                  Text('Suche', style: TextStyle(fontSize: 50)),
+                ],
+              ),
+              const SizedBox(height: 25),
+              TextField(
+                onChanged: filterItems,
+                decoration: const InputDecoration(
+                  labelText: 'Personensuche',
+                  hintText: 'Gib einen Nutzernamen ein...',
+                  prefixIcon: Icon(Icons.person),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 25),
+              Visibility(
+                visible: filteredItems.isEmpty,
+                child: const Card(
+                    child: ListTile(
+                  title: Text(
+                      'Kein Ergebnis\nGib etwas ein oder versuch es mit was anderem'),
+                )),
+              ),
+              Expanded(
+                  child: ListView.builder(
+                itemCount: filteredItems.length > 9 ? 10 : filteredItems.length,
+                itemBuilder: (context, index) {
+                  final item = filteredItems[index];
+
+                  return Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: NetworkImage(item[
+                                  'profilbild_link'] ??
+                              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmHkj6-Tndku8K2387sMaBf2DaiwfBtHQw951-fc9zzA&s'),
+                        ),
+                        title: Text(item['username']),
+                        onTap: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => ProfilePage(
+                                  own_profile_id: own_profile_id,
+                                  profile_id: int.parse(item['profile_id']))));
+                        },
+                      ),
+                    ),
+                  );
+                },
+              )),
+            ],
+          ),
+        ),
 
         /// Messages page
         FutureBuilder(
