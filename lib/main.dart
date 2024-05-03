@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -8,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto/crypto.dart';
 import 'database.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
+import 'dialog.dart';
 
 void main() async {
   runApp(Phoenix(child: ArktoxApp()));
@@ -770,6 +772,29 @@ class ProfilePageState extends State<ProfilePage> {
                               ),
                               Text('$profile_follower_count Follower'),
                             ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Visibility(
+                        visible:
+                            own_profileid == profileid && own_profileid != -1,
+                        child: Card(
+                          margin: EdgeInsets.zero,
+                          child: ListTile(
+                            leading: IconButton(
+                              onPressed: () {
+                                showDialog(
+                                    context: context,
+                                    builder: ((context) => TextfieldDialog(
+                                          own_profileid: own_profileid,
+                                        )));
+                              },
+                              icon: const Icon(Icons.edit),
+                            ),
+                            title: const Text('Profil bearbeiten'),
+                            subtitle: const Text(
+                                'Profilbild, Profilbanner oder About me'),
                           ),
                         ),
                       ),
