@@ -1038,6 +1038,19 @@ class MessagePageState extends State<MessagePage> {
                     children: [
                       Expanded(
                         child: TextField(
+                          textInputAction: TextInputAction.go,
+                          onSubmitted: (value) {
+                            if (value.isNotEmpty) {
+                              final now = DateTime.now();
+                              final formattedDate =
+                                  DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+
+                              DatabaseService().executeQuery(
+                                  'INSERT INTO nachrichten(from_profile_id, to_profile_id, message, attachement_link, readed, message_send_at) VALUES($own_profileid, $profileid, \'$value\', \'\', 0, \'$formattedDate\')');
+                              _textController.clear();
+                              scrollDown = true;
+                            }
+                          },
                           controller: _textController,
                           onChanged: (value) => message = value,
                           decoration: const InputDecoration(
