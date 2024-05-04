@@ -1080,6 +1080,7 @@ class MessagePageState extends State<MessagePage> {
                               DatabaseService().executeQuery(
                                   'INSERT INTO nachrichten(from_profile_id, to_profile_id, message, attachement_link, readed, message_send_at) VALUES($own_profileid, $profileid, \'$message\', \'\', 0, \'$formattedDate\')');
                               _textController.clear();
+                              message = '';
                               scrollDown = true;
                             }
                           },
