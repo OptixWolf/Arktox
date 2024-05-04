@@ -862,6 +862,7 @@ class MessagePageState extends State<MessagePage> {
   TextEditingController _textController = TextEditingController();
   ScrollController _listViewController = ScrollController();
   bool scrollDown = true;
+  int messageCount = 0;
 
   @override
   void initState() {
@@ -914,6 +915,11 @@ class MessagePageState extends State<MessagePage> {
             messages.clear();
             messages = value;
             print('reloaded');
+
+            if (messageCount != value.length) {
+              messageCount = value.length;
+              scrollDown = true;
+            }
 
             if (scrollDown) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
