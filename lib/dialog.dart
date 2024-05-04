@@ -26,6 +26,9 @@ class _MyDialogState extends State<TextfieldDialog> {
 
   @override
   Widget build(BuildContext context) {
+    _controller1.text = widget.own_profilbild_link;
+    _controller2.text = widget.own_profilbanner_link;
+    _controller3.text = widget.own_about_me;
     return AlertDialog(
       title: const Text('Neue Profileigenschaften\n(Max. 255 Zeichen)'),
       content: Column(
@@ -33,25 +36,22 @@ class _MyDialogState extends State<TextfieldDialog> {
         children: [
           TextField(
             controller: _controller1,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'Profilbild Link',
-              labelText: widget.own_profilbild_link,
             ),
           ),
           const SizedBox(height: 10),
           TextField(
             controller: _controller2,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'Profilbanner Link',
-              labelText: widget.own_profilbanner_link,
             ),
           ),
           const SizedBox(height: 10),
           TextField(
             controller: _controller3,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'About me Text',
-              labelText: widget.own_about_me,
             ),
           ),
         ],
