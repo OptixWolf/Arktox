@@ -4,8 +4,16 @@ import 'package:url_launcher/url_launcher.dart';
 
 class TextfieldDialog extends StatefulWidget {
   final int own_profileid;
+  final String own_profilbild_link;
+  final String own_profilbanner_link;
+  final String own_about_me;
 
-  const TextfieldDialog({super.key, required this.own_profileid});
+  const TextfieldDialog(
+      {super.key,
+      required this.own_profileid,
+      required this.own_profilbild_link,
+      required this.own_profilbanner_link,
+      required this.own_about_me});
 
   @override
   State<TextfieldDialog> createState() => _MyDialogState();
@@ -25,22 +33,25 @@ class _MyDialogState extends State<TextfieldDialog> {
         children: [
           TextField(
             controller: _controller1,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Profilbild Link',
+              labelText: widget.own_profilbild_link,
             ),
           ),
           const SizedBox(height: 10),
           TextField(
             controller: _controller2,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Profilbanner Link',
+              labelText: widget.own_profilbanner_link,
             ),
           ),
           const SizedBox(height: 10),
           TextField(
             controller: _controller3,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'About me Text',
+              labelText: widget.own_about_me,
             ),
           ),
         ],

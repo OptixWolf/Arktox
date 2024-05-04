@@ -123,7 +123,7 @@ class _HomepageState extends State<Homepage> {
             );
             print(result.first);
 
-            DatabaseService()
+            /*DatabaseService()
                 .executeQuery('SELECT profile_id FROM profil')
                 .then((users) {
               if (users.isNotEmpty) {
@@ -161,7 +161,7 @@ class _HomepageState extends State<Homepage> {
                   }
                 });
               }
-            });
+            });*/
           }
         });
       });
@@ -202,6 +202,44 @@ class _HomepageState extends State<Homepage> {
         filteredItems.clear();
       }
     });
+  }
+
+  Future<List<String>> getContacts() async {
+    var users =
+        await DatabaseService().executeQuery('SELECT profile_id FROM profil');
+    if (users.isNotEmpty) {
+      var follower =
+          await DatabaseService().executeQuery('SELECT * FROM follower');
+      if (follower.isNotEmpty) {
+        for (var user in users) {
+          if (user['profile_id'] != own_profile_id.toString()) {
+            print(user);
+            String current_user = user['profile_id'];
+            bool con1 = false;
+            bool con2 = false;
+            for (var follow in follower) {
+              print(follow);
+              if (follow['from_profile_id'] == own_profile_id.toString() &&
+                  follow['to_profile_id'] == current_user) {
+                con1 = true;
+              }
+              if (follow['from_profile_id'] == current_user &&
+                  follow['to_profile_id'] == own_profile_id.toString()) {
+                con2 = true;
+              }
+              if (con1 && con2) {
+                if (!contacts.contains(current_user)) {
+                  contacts.add(current_user);
+                }
+              }
+            }
+          }
+        }
+        print(contacts);
+        return contacts;
+      }
+    }
+    throw ();
   }
 
   Future<List<Map<String, dynamic>>> getMessages() {
@@ -320,92 +358,125 @@ class _HomepageState extends State<Homepage> {
 
         /// Messages page
         FutureBuilder(
-            future: getMessages(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
+            future: getContacts(),
+            builder: (context, snapshot2) {
+              if (snapshot2.connectionState == ConnectionState.waiting) {
                 return const CircularProgressIndicator();
-              } else if (snapshot.hasError) {
+              } else if (snapshot2.hasError) {
                 return Container();
-              } else if (snapshot.hasData) {
-                return Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    children: [
-                      const Row(children: [
-                        SizedBox(width: 7),
-                        Text('Nachrichten', style: TextStyle(fontSize: 50)),
-                      ]),
-                      const SizedBox(
-                        height: 25,
-                      ),
-                      const Row(children: [
-                        SizedBox(width: 7),
-                        Text('Kontake:', style: TextStyle(fontSize: 25)),
-                      ]),
-                      Visibility(
-                        visible: contacts.isEmpty || items.isEmpty,
-                        child: const Card(
-                          child: ListTile(
-                            title: Text(
-                                'Keine Kontakte\nUm jemanden hinzuzufügen müsst ihr euch gegenseitig folgen'),
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: contacts.isNotEmpty && items.isNotEmpty,
-                        child: Expanded(
-                          child: ListView.builder(
-                            itemCount: contacts.length,
-                            itemBuilder: (context, index) {
-                              String username = '';
-                              String profilbild_link = '';
-                              int msgCount = 0;
-
-                              for (var element in items) {
-                                if (element["profile_id"] == contacts[index]) {
-                                  username = element["username"];
-                                  profilbild_link = element[
-                                          "profilbild_link"] ??
-                                      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmHkj6-Tndku8K2387sMaBf2DaiwfBtHQw951-fc9zzA&s';
-                                }
-                              }
-
-                              for (var item in snapshot.data!) {
-                                if (item['from_profile_id'] ==
-                                    contacts.elementAt(index).toString()) {
-                                  if (item['readed'] == '0') {
-                                    msgCount++;
-                                  }
-                                }
-                              }
-
-                              return Card(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(5),
+              } else if (snapshot2.hasData) {
+                return FutureBuilder(
+                    future: getMessages(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        return Container();
+                      } else if (snapshot.hasData) {
+                        return Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              const Row(children: [
+                                SizedBox(width: 7),
+                                Text('Nachrichten',
+                                    style: TextStyle(fontSize: 50)),
+                              ]),
+                              const SizedBox(
+                                height: 25,
+                              ),
+                              const Row(children: [
+                                SizedBox(width: 7),
+                                Text('Kontake:',
+                                    style: TextStyle(fontSize: 25)),
+                              ]),
+                              Visibility(
+                                visible:
+                                    snapshot2.data!.isEmpty || items.isEmpty,
+                                child: const Card(
                                   child: ListTile(
-                                    title: Text(username),
-                                    leading: CircleAvatar(
-                                      backgroundImage:
-                                          NetworkImage(profilbild_link),
-                                    ),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        IconButton(
-                                            onPressed: () {
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          ProfilePage(
+                                    title: Text(
+                                        'Keine Kontakte\nUm jemanden hinzuzufügen müsst ihr euch gegenseitig folgen'),
+                                  ),
+                                ),
+                              ),
+                              Visibility(
+                                visible: snapshot2.data!.isNotEmpty &&
+                                    items.isNotEmpty,
+                                child: Expanded(
+                                  child: ListView.builder(
+                                    itemCount: snapshot2.data!.length,
+                                    itemBuilder: (context, index) {
+                                      String username = '';
+                                      String profilbild_link = '';
+                                      int msgCount = 0;
+
+                                      for (var element in items) {
+                                        if (element["profile_id"] ==
+                                            snapshot2.data![index]) {
+                                          username = element["username"];
+                                          profilbild_link = element[
+                                                  "profilbild_link"] ??
+                                              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmHkj6-Tndku8K2387sMaBf2DaiwfBtHQw951-fc9zzA&s';
+                                        }
+                                      }
+
+                                      for (var item in snapshot.data!) {
+                                        if (item['from_profile_id'] ==
+                                            snapshot2.data!
+                                                .elementAt(index)
+                                                .toString()) {
+                                          if (item['readed'] == '0') {
+                                            msgCount++;
+                                          }
+                                        }
+                                      }
+
+                                      return Card(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(5),
+                                          child: ListTile(
+                                            title: Text(username),
+                                            leading: CircleAvatar(
+                                              backgroundImage:
+                                                  NetworkImage(profilbild_link),
+                                            ),
+                                            trailing: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                IconButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context).push(MaterialPageRoute(
+                                                          builder: (context) => ProfilePage(
                                                               own_profile_id:
                                                                   own_profile_id,
                                                               profile_id: int
-                                                                  .parse(contacts[
+                                                                  .parse(snapshot2
+                                                                          .data![
                                                                       index]))));
-                                            },
-                                            icon: const Icon(Icons.person)),
-                                        IconButton(
-                                            onPressed: () {
+                                                    },
+                                                    icon: const Icon(
+                                                        Icons.person)),
+                                                IconButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context).push(MaterialPageRoute(
+                                                          builder: (context) => MessagePage(
+                                                              own_profile_id:
+                                                                  own_profile_id,
+                                                              profile_id: int
+                                                                  .parse(snapshot2
+                                                                          .data![
+                                                                      index]))));
+                                                    },
+                                                    icon: Badge(
+                                                      label: Text(
+                                                          msgCount.toString()),
+                                                      child: const Icon(
+                                                          Icons.chat),
+                                                    ))
+                                              ],
+                                            ),
+                                            onTap: () {
                                               Navigator.of(context).push(
                                                   MaterialPageRoute(
                                                       builder: (context) =>
@@ -413,34 +484,23 @@ class _HomepageState extends State<Homepage> {
                                                               own_profile_id:
                                                                   own_profile_id,
                                                               profile_id: int
-                                                                  .parse(contacts[
+                                                                  .parse(snapshot2
+                                                                          .data![
                                                                       index]))));
                                             },
-                                            icon: Badge(
-                                              label: Text(msgCount.toString()),
-                                              child: const Icon(Icons.chat),
-                                            ))
-                                      ],
-                                    ),
-                                    onTap: () {
-                                      Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                              builder: (context) => MessagePage(
-                                                  own_profile_id:
-                                                      own_profile_id,
-                                                  profile_id: int.parse(
-                                                      contacts[index]))));
+                                          ),
+                                        ),
+                                      );
                                     },
                                   ),
                                 ),
-                              );
-                            },
+                              ),
+                            ],
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+                        );
+                      }
+                      throw ();
+                    });
               }
               throw ();
             }),
@@ -819,6 +879,16 @@ class ProfilePageState extends State<ProfilePage> {
                                     context: context,
                                     builder: ((context) => TextfieldDialog(
                                           own_profileid: own_profileid,
+                                          own_profilbild_link: snapshot.data
+                                                  ?.first['profilbild_link'] ??
+                                              '',
+                                          own_profilbanner_link:
+                                              snapshot.data?.first[
+                                                      'profilbanner_link'] ??
+                                                  '',
+                                          own_about_me: snapshot
+                                                  .data?.first['about_me'] ??
+                                              '',
                                         ))).then(
                                   (_) {
                                     setState(() {});
