@@ -223,33 +223,35 @@ class _HomepageState extends State<Homepage> {
         selectedIndex: currentPageIndex,
         destinations: const <Widget>[
           NavigationDestination(
-            selectedIcon: Icon(Icons.home),
-            icon: Icon(Icons.home_outlined),
-            label: 'Startseite',
+            selectedIcon: Icon(Icons.archive),
+            icon: Icon(Icons.archive_outlined),
+            label: 'Archiv',
           ),
           NavigationDestination(
-            icon: Icon(Icons.archive),
-            label: 'Archiv',
+            icon: Icon(Icons.code),
+            label: 'Skripte',
           ),
           NavigationDestination(
             icon: Icon(Icons.search),
             label: 'Suche',
           ),
           NavigationDestination(
-            icon: Icon(Icons.messenger_sharp),
+            selectedIcon: Icon(Icons.messenger),
+            icon: Icon(Icons.messenger_outline),
             label: 'Nachrichten',
           ),
           NavigationDestination(
-            icon: Icon(Icons.settings),
+            selectedIcon: Icon(Icons.settings),
+            icon: Icon(Icons.settings_outlined),
             label: 'Einstellungen',
           ),
         ],
       ),
       body: <Widget>[
-        /// Startseite
+        /// Archiv
         Container(),
 
-        /// Archiv
+        /// Skripte
         Container(),
 
         /// Search page
