@@ -596,6 +596,7 @@ class LoginPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 TextField(
+                  obscureText: true,
                   onChanged: (value) =>
                       passwordHashDigest = sha256.convert(utf8.encode(value)),
                   decoration: const InputDecoration(
