@@ -1,15 +1,13 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto/crypto.dart';
 import 'database.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'dialog.dart';
+import 'package:intl/intl.dart';
+import 'dart:io';
 
 void main() async {
   runApp(Phoenix(child: ArktoxApp()));
@@ -238,10 +236,7 @@ class _HomepageState extends State<Homepage> {
             label: 'Suche',
           ),
           NavigationDestination(
-            icon: Badge(
-              label: Text('1337'),
-              child: Icon(Icons.messenger_sharp),
-            ),
+            icon: Icon(Icons.messenger_sharp),
             label: 'Nachrichten',
           ),
           NavigationDestination(
@@ -398,11 +393,29 @@ class _HomepageState extends State<Homepage> {
                                             },
                                             icon: const Icon(Icons.person)),
                                         IconButton(
-                                            onPressed: () {},
+                                            onPressed: () {
+                                              Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          MessagePage(
+                                                              own_profile_id:
+                                                                  own_profile_id,
+                                                              profile_id: int
+                                                                  .parse(contacts[
+                                                                      index]))));
+                                            },
                                             icon: const Icon(Icons.chat))
                                       ],
                                     ),
-                                    onTap: () {},
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) => MessagePage(
+                                                  own_profile_id:
+                                                      own_profile_id,
+                                                  profile_id: int.parse(
+                                                      contacts[index]))));
+                                    },
                                   ),
                                 ),
                               );
@@ -806,5 +819,220 @@ class ProfilePageState extends State<ProfilePage> {
             throw ();
           }),
     );
+  }
+}
+
+class MessagePage extends StatefulWidget {
+  final int own_profile_id;
+  final int profile_id;
+
+  const MessagePage(
+      {super.key, required this.own_profile_id, required this.profile_id});
+
+  @override
+  MessagePageState createState() => MessagePageState();
+}
+
+class MessagePageState extends State<MessagePage> {
+  int profileid = -1;
+  int own_profileid = -1;
+  List<Map<String, dynamic>> messages = [];
+  String message = '';
+  String own_username = '';
+  String other_username = '';
+  String own_profilbild = '';
+  String other_profilbild = '';
+  bool loop = true;
+
+  @override
+  void initState() {
+    super.initState();
+    profileid = widget.profile_id;
+    own_profileid = widget.own_profile_id;
+
+    DatabaseService().executeQuery('SELECT * FROM profil').then(
+      (value) {
+        for (var element in value) {
+          if (element["profile_id"] == own_profileid.toString()) {
+            own_username = element["username"];
+            own_profilbild = element["profilbild_link"] ??
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmHkj6-Tndku8K2387sMaBf2DaiwfBtHQw951-fc9zzA&s';
+          }
+          if (element["profile_id"] == profileid.toString()) {
+            other_username = element["username"];
+            other_profilbild = element["profilbild_link"] ??
+                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmHkj6-Tndku8K2387sMaBf2DaiwfBtHQw951-fc9zzA&s';
+          }
+        }
+      },
+    );
+
+    getMessages();
+
+    Timer.periodic(const Duration(seconds: 3), (Timer t) {
+      if (loop) {
+        getMessages();
+      } else {
+        t.cancel();
+      }
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getProfileDetails() async {
+    var result = await DatabaseService().executeQuery('SELECT * FROM profil');
+    return (result);
+  }
+
+  void getMessages() async {
+    var results = await DatabaseService().executeQuery(
+        'SELECT * FROM nachrichten WHERE from_profile_id = $own_profileid AND to_profile_id = $profileid OR from_profile_id = $profileid AND to_profile_id = $own_profileid');
+    DatabaseService().executeQuery(
+        'UPDATE nachrichten SET readed = 1 WHERE from_profile_id = $own_profileid AND to_profile_id = $profileid OR from_profile_id = $profileid AND to_profile_id = $own_profileid');
+    messages.clear();
+    try {
+      setState(() {
+        messages = results;
+        print('reloaded');
+      });
+    } catch (e) {
+      loop = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text('Nachrichten'),
+        ),
+        body: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Column(
+            children: [
+              Card(
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: EdgeInsets.all(5.0),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: NetworkImage(other_profilbild),
+                    ),
+                    title: Text(other_username),
+                    trailing: IconButton(
+                      icon: Icon(Icons.person),
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => ProfilePage(
+                                own_profile_id: own_profileid,
+                                profile_id: profileid)));
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Expanded(
+                child: Card(
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20)),
+                  ),
+                  margin: EdgeInsets.zero,
+                  child: ListView.builder(
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      return Column(
+                        children: [
+                          Visibility(
+                            visible:
+                                messages.elementAt(index)['from_profile_id'] ==
+                                    own_profileid.toString(),
+                            child: Card(
+                              color: Color.fromARGB(255, 42, 116, 46),
+                              child: Padding(
+                                padding: EdgeInsets.all(5.0),
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundImage:
+                                        NetworkImage(own_profilbild),
+                                  ),
+                                  title: Text(own_username),
+                                  subtitle: Text(
+                                      messages.elementAt(index)['message']),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Visibility(
+                            visible:
+                                messages.elementAt(index)['from_profile_id'] ==
+                                    profileid.toString(),
+                            child: Card(
+                              color: const Color.fromARGB(255, 25, 97, 156),
+                              child: Padding(
+                                padding: EdgeInsets.all(5.0),
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundImage:
+                                        NetworkImage(other_profilbild),
+                                  ),
+                                  title: Text(other_username),
+                                  subtitle: Text(
+                                      messages.elementAt(index)['message']),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ),
+              Card(
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20)),
+                ),
+                margin: EdgeInsets.zero,
+                child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          onChanged: (value) => message = value,
+                          decoration: const InputDecoration(
+                            labelText: 'Nachricht',
+                            hintText: 'Gib hier deine Nachricht ein...',
+                            prefixIcon: Icon(Icons.message),
+                            border: OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(25.0)),
+                            ),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                          onPressed: () {
+                            if (message.isNotEmpty) {
+                              final now = DateTime.now();
+                              final formattedDate =
+                                  DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+
+                              DatabaseService().executeQuery(
+                                  'INSERT INTO nachrichten(from_profile_id, to_profile_id, message, attachement_link, readed, message_send_at) VALUES($own_profileid, $profileid, \'$message\', \'\', 0, \'$formattedDate\')');
+                            }
+                          },
+                          icon: const Icon(Icons.send))
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ));
   }
 }
