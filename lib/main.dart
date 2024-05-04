@@ -1,6 +1,9 @@
+// ignore_for_file: avoid_print, non_constant_identifier_names, prefer_interpolation_to_compose_strings
+
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto/crypto.dart';
 import 'database.dart';
@@ -295,7 +298,7 @@ class _HomepageState extends State<Homepage> {
 
         /// Search page
         Padding(
-          padding: EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
               const Row(
@@ -855,8 +858,8 @@ class ProfilePageState extends State<ProfilePage> {
                             children: [
                               IconButton(
                                 icon: following
-                                    ? Icon(Icons.favorite)
-                                    : Icon(Icons.favorite_outline),
+                                    ? const Icon(Icons.favorite)
+                                    : const Icon(Icons.favorite_outline),
                                 onPressed: () {
                                   changeFollowStatus();
                                 },
@@ -1001,7 +1004,7 @@ class MessagePageState extends State<MessagePage> {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 _listViewController.animateTo(
                   _listViewController.position.maxScrollExtent,
-                  duration: Duration(milliseconds: 300),
+                  duration: const Duration(milliseconds: 300),
                   curve: Curves.easeOut,
                 );
               });
@@ -1022,20 +1025,20 @@ class MessagePageState extends State<MessagePage> {
           title: const Text('Nachrichten'),
         ),
         body: Padding(
-          padding: EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
               Card(
                 margin: EdgeInsets.zero,
                 child: Padding(
-                  padding: EdgeInsets.all(5.0),
+                  padding: const EdgeInsets.all(5.0),
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundImage: NetworkImage(other_profilbild),
                     ),
                     title: Text(other_username),
                     trailing: IconButton(
-                      icon: Icon(Icons.person),
+                      icon: const Icon(Icons.person),
                       onPressed: () {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => ProfilePage(
@@ -1077,6 +1080,41 @@ class MessagePageState extends State<MessagePage> {
                                   title: Text(own_username),
                                   subtitle: Text(
                                       messages.elementAt(index)['message']),
+                                  trailing: PopupMenuButton<int>(
+                                    onSelected: (value) {
+                                      if (value == 1) {
+                                        Clipboard.setData(ClipboardData(
+                                            text: messages
+                                                .elementAt(index)['message']));
+                                      }
+                                      if (value == 2) {
+                                        DatabaseService().executeQuery(
+                                            'DELETE FROM nachrichten WHERE message_id = ' +
+                                                messages.elementAt(
+                                                    index)['message_id']);
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      const PopupMenuItem(
+                                        value: 1,
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.copy),
+                                            Text('Kopieren'),
+                                          ],
+                                        ),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 2,
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.delete),
+                                            Text('Löschen'),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -1097,6 +1135,26 @@ class MessagePageState extends State<MessagePage> {
                                   title: Text(other_username),
                                   subtitle: Text(
                                       messages.elementAt(index)['message']),
+                                  trailing: PopupMenuButton<int>(
+                                    onSelected: (value) {
+                                      if (value == 1) {
+                                        Clipboard.setData(ClipboardData(
+                                            text: messages
+                                                .elementAt(index)['message']));
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      const PopupMenuItem(
+                                        value: 1,
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.copy),
+                                            Text('Kopieren'),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
