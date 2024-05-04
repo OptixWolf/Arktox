@@ -204,9 +204,10 @@ class _HomepageState extends State<Homepage> {
     });
   }
 
-  Future<List<Map<String, dynamic>>> getProfileDetails() async {
-    var results = await DatabaseService().executeQuery('SELECT * FROM profil');
-    return results;
+  Future<List<Map<String, dynamic>>> getMessages() {
+    var result = DatabaseService().executeQuery(
+        'SELECT * FROM nachrichten WHERE to_profile_id = $own_profile_id');
+    return result;
   }
 
   Widget build(BuildContext context) {
@@ -319,7 +320,7 @@ class _HomepageState extends State<Homepage> {
 
         /// Messages page
         FutureBuilder(
-            future: getProfileDetails(),
+            future: getMessages(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const CircularProgressIndicator();
@@ -342,7 +343,7 @@ class _HomepageState extends State<Homepage> {
                         Text('Kontake:', style: TextStyle(fontSize: 25)),
                       ]),
                       Visibility(
-                        visible: contacts.isEmpty || snapshot.data!.isEmpty,
+                        visible: contacts.isEmpty || items.isEmpty,
                         child: const Card(
                           child: ListTile(
                             title: Text(
@@ -351,21 +352,30 @@ class _HomepageState extends State<Homepage> {
                         ),
                       ),
                       Visibility(
-                        visible:
-                            contacts.isNotEmpty && snapshot.data!.isNotEmpty,
+                        visible: contacts.isNotEmpty && items.isNotEmpty,
                         child: Expanded(
                           child: ListView.builder(
                             itemCount: contacts.length,
                             itemBuilder: (context, index) {
                               String username = '';
                               String profilbild_link = '';
+                              int msgCount = 0;
 
-                              for (var element in snapshot.data!) {
+                              for (var element in items) {
                                 if (element["profile_id"] == contacts[index]) {
                                   username = element["username"];
                                   profilbild_link = element[
                                           "profilbild_link"] ??
                                       'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmHkj6-Tndku8K2387sMaBf2DaiwfBtHQw951-fc9zzA&s';
+                                }
+                              }
+
+                              for (var item in snapshot.data!) {
+                                if (item['from_profile_id'] ==
+                                    contacts.elementAt(index).toString()) {
+                                  if (item['readed'] == '0') {
+                                    msgCount++;
+                                  }
                                 }
                               }
 
@@ -406,7 +416,10 @@ class _HomepageState extends State<Homepage> {
                                                                   .parse(contacts[
                                                                       index]))));
                                             },
-                                            icon: const Icon(Icons.chat))
+                                            icon: Badge(
+                                              label: Text(msgCount.toString()),
+                                              child: const Icon(Icons.chat),
+                                            ))
                                       ],
                                     ),
                                     onTap: () {
@@ -845,6 +858,9 @@ class MessagePageState extends State<MessagePage> {
   String own_profilbild = '';
   String other_profilbild = '';
   bool loop = true;
+  TextEditingController _textController = TextEditingController();
+  ScrollController _listViewController = ScrollController();
+  bool scrollDown = true;
 
   @override
   void initState() {
@@ -868,7 +884,6 @@ class MessagePageState extends State<MessagePage> {
         }
       },
     );
-
     getMessages();
 
     Timer.periodic(const Duration(seconds: 3), (Timer t) {
@@ -885,20 +900,36 @@ class MessagePageState extends State<MessagePage> {
     return (result);
   }
 
-  void getMessages() async {
-    var results = await DatabaseService().executeQuery(
-        'SELECT * FROM nachrichten WHERE from_profile_id = $own_profileid AND to_profile_id = $profileid OR from_profile_id = $profileid AND to_profile_id = $own_profileid');
-    DatabaseService().executeQuery(
-        'UPDATE nachrichten SET readed = 1 WHERE from_profile_id = $own_profileid AND to_profile_id = $profileid OR from_profile_id = $profileid AND to_profile_id = $own_profileid');
-    messages.clear();
-    try {
-      setState(() {
-        messages = results;
-        print('reloaded');
-      });
-    } catch (e) {
-      loop = false;
-    }
+  void getMessages() {
+    DatabaseService()
+        .executeQuery(
+            'SELECT * FROM nachrichten WHERE from_profile_id = $own_profileid AND to_profile_id = $profileid OR from_profile_id = $profileid AND to_profile_id = $own_profileid')
+        .then(
+      (value) {
+        DatabaseService().executeQuery(
+            'UPDATE nachrichten SET readed = 1 WHERE from_profile_id = $own_profileid AND to_profile_id = $profileid OR from_profile_id = $profileid AND to_profile_id = $own_profileid');
+        try {
+          setState(() {
+            messages.clear();
+            messages = value;
+            print('reloaded');
+
+            if (scrollDown) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _listViewController.animateTo(
+                  _listViewController.position.maxScrollExtent,
+                  duration: Duration(milliseconds: 300),
+                  curve: Curves.easeOut,
+                );
+              });
+              scrollDown = false;
+            }
+          });
+        } catch (e) {
+          loop = false;
+        }
+      },
+    );
   }
 
   @override
@@ -942,6 +973,7 @@ class MessagePageState extends State<MessagePage> {
                   ),
                   margin: EdgeInsets.zero,
                   child: ListView.builder(
+                    controller: _listViewController,
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
                       return Column(
@@ -951,9 +983,9 @@ class MessagePageState extends State<MessagePage> {
                                 messages.elementAt(index)['from_profile_id'] ==
                                     own_profileid.toString(),
                             child: Card(
-                              color: Color.fromARGB(255, 42, 116, 46),
+                              color: const Color.fromARGB(255, 42, 116, 46),
                               child: Padding(
-                                padding: EdgeInsets.all(5.0),
+                                padding: const EdgeInsets.all(5.0),
                                 child: ListTile(
                                   leading: CircleAvatar(
                                     backgroundImage:
@@ -973,7 +1005,7 @@ class MessagePageState extends State<MessagePage> {
                             child: Card(
                               color: const Color.fromARGB(255, 25, 97, 156),
                               child: Padding(
-                                padding: EdgeInsets.all(5.0),
+                                padding: const EdgeInsets.all(5.0),
                                 child: ListTile(
                                   leading: CircleAvatar(
                                     backgroundImage:
@@ -1005,6 +1037,7 @@ class MessagePageState extends State<MessagePage> {
                     children: [
                       Expanded(
                         child: TextField(
+                          controller: _textController,
                           onChanged: (value) => message = value,
                           decoration: const InputDecoration(
                             labelText: 'Nachricht',
@@ -1026,6 +1059,8 @@ class MessagePageState extends State<MessagePage> {
 
                               DatabaseService().executeQuery(
                                   'INSERT INTO nachrichten(from_profile_id, to_profile_id, message, attachement_link, readed, message_send_at) VALUES($own_profileid, $profileid, \'$message\', \'\', 0, \'$formattedDate\')');
+                              _textController.clear();
+                              scrollDown = true;
                             }
                           },
                           icon: const Icon(Icons.send))
