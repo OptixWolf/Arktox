@@ -676,6 +676,8 @@ class ProfilePageState extends State<ProfilePage> {
     profileid = widget.profile_id;
     own_profileid = widget.own_profile_id;
 
+    getProfileDetails();
+
     DatabaseService()
         .executeQuery(
             'SELECT follower_id FROM follower WHERE from_profile_id = $own_profileid AND to_profile_id = $profileid')
@@ -817,7 +819,11 @@ class ProfilePageState extends State<ProfilePage> {
                                     context: context,
                                     builder: ((context) => TextfieldDialog(
                                           own_profileid: own_profileid,
-                                        )));
+                                        ))).then(
+                                  (_) {
+                                    setState(() {});
+                                  },
+                                );
                               },
                               icon: const Icon(Icons.edit),
                             ),
