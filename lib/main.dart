@@ -322,7 +322,7 @@ class _HomepageState extends State<Homepage> {
                                       style: TextStyle(fontSize: 50)),
                                 ],
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 15),
                               const Row(children: [
                                 SizedBox(width: 7),
                                 Text('Kategorien',
@@ -330,6 +330,7 @@ class _HomepageState extends State<Homepage> {
                               ]),
                               const SizedBox(height: 5),
                               Expanded(
+                                flex: 3,
                                 child: ListView.builder(
                                   padding: EdgeInsets.zero,
                                   itemCount: snapshot.data!.length,
@@ -362,6 +363,7 @@ class _HomepageState extends State<Homepage> {
                               ]),
                               const SizedBox(height: 5),
                               Expanded(
+                                flex: 3,
                                 child: ListView.builder(
                                   padding: EdgeInsets.zero,
                                   itemCount: verified_items.length > 4
@@ -389,27 +391,47 @@ class _HomepageState extends State<Homepage> {
                                   },
                                 ),
                               ),
-                              const SizedBox(height: 15),
-                              const Row(children: [
-                                SizedBox(width: 7),
-                                Text('Eigene Archiv Einträge',
-                                    style: TextStyle(fontSize: 25)),
-                              ]),
-                              const SizedBox(height: 5),
-                              Expanded(
-                                child: ListView.builder(
-                                  padding: EdgeInsets.zero,
-                                  itemCount: own_items.length,
-                                  itemBuilder: (context, index) {
-                                    return Card(
-                                      child: ListTile(
-                                          title: Text(own_items
-                                              .elementAt(index)['title'])),
-                                    );
-                                  },
+                              Visibility(
+                                visible: loggedIn && own_items.isNotEmpty,
+                                child: Expanded(
+                                  flex: 4,
+                                  child: Column(
+                                    children: [
+                                      const SizedBox(height: 15),
+                                      const Row(children: [
+                                        SizedBox(width: 7),
+                                        Text('Eigene Archiv Einträge',
+                                            style: TextStyle(fontSize: 25)),
+                                      ]),
+                                      const SizedBox(height: 5),
+                                      Expanded(
+                                        child: ListView.builder(
+                                          padding: EdgeInsets.zero,
+                                          itemCount: own_items.length,
+                                          itemBuilder: (context, index) {
+                                            return Card(
+                                              child: ListTile(
+                                                  onTap: () {
+                                                    Navigator.of(context).push(
+                                                        MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                ArchiveItemPage(
+                                                                    archiv_itemid:
+                                                                        own_items
+                                                                            .elementAt(index)['archiv_item_id'])));
+                                                  },
+                                                  title: Text(
+                                                      own_items.elementAt(
+                                                          index)['title'])),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 10),
                             ],
                           ),
                         );
@@ -421,8 +443,168 @@ class _HomepageState extends State<Homepage> {
             }),
 
         /// Skripte
-        /// counter 2 und eigene Methoden benutzen
-        Container(),
+        FutureBuilder(
+            future: getSkripteKategorien(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Container();
+              } else if (snapshot.hasData) {
+                return FutureBuilder(
+                    future: getSkripteEintraege(),
+                    builder: (context, snapshot2) {
+                      if (snapshot2.connectionState ==
+                          ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      } else if (snapshot2.hasError) {
+                        return Container();
+                      } else if (snapshot2.hasData) {
+                        counter2 = 0;
+                        List<Map<String, dynamic>> own_items = [];
+                        List<Map<String, dynamic>> verified_items = [];
+
+                        for (var item in snapshot2.data!) {
+                          if (item['profile_id'] == own_profile_id.toString()) {
+                            own_items.add(item);
+                          }
+                        }
+
+                        for (var item in snapshot2.data!) {
+                          if (item['approval_status'] == '1') {
+                            verified_items.add(item);
+                          }
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              const SizedBox(height: 50),
+                              const Row(
+                                children: [
+                                  SizedBox(width: 7),
+                                  Text('Skripte',
+                                      style: TextStyle(fontSize: 50)),
+                                ],
+                              ),
+                              const SizedBox(height: 15),
+                              const Row(children: [
+                                SizedBox(width: 7),
+                                Text('Kategorien',
+                                    style: TextStyle(fontSize: 25)),
+                              ]),
+                              const SizedBox(height: 5),
+                              Expanded(
+                                flex: 3,
+                                child: ListView.builder(
+                                  padding: EdgeInsets.zero,
+                                  itemCount: snapshot.data!.length,
+                                  itemBuilder: (context, index) {
+                                    return Card(
+                                      child: ListTile(
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      SkriptePlattformPage(
+                                                          kategorieid: snapshot
+                                                                  .data!
+                                                                  .elementAt(
+                                                                      index)[
+                                                              'kategorie_id'])));
+                                        },
+                                        title: Text(snapshot.data!
+                                            .elementAt(index)['kategorie']),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 15),
+                              const Row(children: [
+                                SizedBox(width: 7),
+                                Text('Neueste Skripte',
+                                    style: TextStyle(fontSize: 25)),
+                              ]),
+                              const SizedBox(height: 5),
+                              Expanded(
+                                flex: 3,
+                                child: ListView.builder(
+                                  padding: EdgeInsets.zero,
+                                  itemCount: verified_items.length > 4
+                                      ? 5
+                                      : verified_items.length,
+                                  itemBuilder: (context, index) {
+                                    counter2++;
+                                    return Card(
+                                      child: ListTile(
+                                          onTap: () {
+                                            Navigator.of(context).push(MaterialPageRoute(
+                                                builder: (context) => SkriptItemPage(
+                                                    skriptid: verified_items
+                                                        .elementAt(verified_items
+                                                                .length -
+                                                            index -
+                                                            1)['skript_id'])));
+                                          },
+                                          title: Text(verified_items.elementAt(
+                                              verified_items.length -
+                                                  counter2)['title'])),
+                                    );
+                                  },
+                                ),
+                              ),
+                              Visibility(
+                                visible: loggedIn && own_items.isNotEmpty,
+                                child: Expanded(
+                                  flex: 4,
+                                  child: Column(
+                                    children: [
+                                      const SizedBox(height: 15),
+                                      const Row(children: [
+                                        SizedBox(width: 7),
+                                        Text('Eigene Skripte',
+                                            style: TextStyle(fontSize: 25)),
+                                      ]),
+                                      const SizedBox(height: 5),
+                                      Expanded(
+                                        child: ListView.builder(
+                                          padding: EdgeInsets.zero,
+                                          itemCount: own_items.length,
+                                          itemBuilder: (context, index) {
+                                            return Card(
+                                              child: ListTile(
+                                                  onTap: () {
+                                                    Navigator.of(context).push(
+                                                        MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                SkriptItemPage(
+                                                                    skriptid: own_items
+                                                                        .elementAt(
+                                                                            index)['skript_id'])));
+                                                  },
+                                                  title: Text(
+                                                      own_items.elementAt(
+                                                          index)['title'])),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                            ],
+                          ),
+                        );
+                      }
+                      throw ();
+                    });
+              }
+              throw ();
+            }),
 
         /// Search page
         Padding(
@@ -811,6 +993,62 @@ class PlattformPage extends StatelessWidget {
   }
 }
 
+class SkriptePlattformPage extends StatelessWidget {
+  final String kategorieid;
+
+  const SkriptePlattformPage({super.key, required this.kategorieid});
+
+  Future<List<Map<String, dynamic>>> getArchivePlatforms() async {
+    var result = await DatabaseService().executeQuery(
+        'SELECT ps.* FROM plattform_skripte ps WHERE ps.plattform_id IN (SELECT s.plattform_id FROM skripte s WHERE s.kategorie_id = $kategorieid)');
+    return result;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Plattformen'),
+      ),
+      body: FutureBuilder(
+          future: getArchivePlatforms(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator();
+            } else if (snapshot.hasError) {
+              return Container();
+            } else if (snapshot.hasData) {
+              return Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Expanded(
+                  child: ListView.builder(
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        child: ListTile(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => SelectSkriptItemPage(
+                                      kategorieid: kategorieid,
+                                      plattformid: snapshot.data!
+                                          .elementAt(index)['plattform_id'],
+                                    )));
+                          },
+                          title: Text(
+                              snapshot.data!.elementAt(index)['plattform']),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            }
+            throw ();
+          }),
+    );
+  }
+}
+
 class SelectArchiveItemPage extends StatefulWidget {
   final String kategorieid;
   final String plattformid;
@@ -920,6 +1158,114 @@ class SelectArchiveItemPageState extends State<SelectArchiveItemPage> {
   }
 }
 
+class SelectSkriptItemPage extends StatefulWidget {
+  final String kategorieid;
+  final String plattformid;
+
+  const SelectSkriptItemPage(
+      {super.key, required this.kategorieid, required this.plattformid});
+
+  @override
+  SelectSkriptItemPageState createState() => SelectSkriptItemPageState();
+}
+
+class SelectSkriptItemPageState extends State<SelectSkriptItemPage> {
+  List<Map<String, dynamic>> items = [];
+  List<Map<String, dynamic>> filteredItems = [];
+  String constantFilterString = "[Archiviert]";
+
+  @override
+  void initState() {
+    super.initState();
+    Preferences.getPref('archived').then((archivedValue) {
+      if (!archivedValue) {
+        constantFilterString = "fijeghuioefbuognberonbgoierngioenbrognokenr";
+      }
+      loadItems();
+    });
+  }
+
+  Future<void> loadItems() async {
+    var result = await DatabaseService().executeQuery(
+        'SELECT * FROM skripte WHERE kategorie_id = ' +
+            widget.kategorieid +
+            ' AND plattform_id = ' +
+            widget.plattformid +
+            '');
+    setState(() {
+      items = result;
+      items = items
+          .where((item) => !item['title']
+              .toString()
+              .toLowerCase()
+              .contains(constantFilterString.toLowerCase()))
+          .toList();
+      filteredItems = items;
+    });
+  }
+
+  void filterItems(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        filteredItems = items;
+      } else {
+        filteredItems = items
+            .where((item) => item['title']
+                .toString()
+                .toLowerCase()
+                .contains(query.toLowerCase()))
+            .toList();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Skript Auswahl'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            TextField(
+              onChanged: filterItems,
+              decoration: const InputDecoration(
+                labelText: 'Suche',
+                hintText: 'Suche',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: ListView.builder(
+                itemCount: filteredItems.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    child: ListTile(
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => SkriptItemPage(
+                                  skriptid: filteredItems[index]['skript_id'],
+                                )));
+                      },
+                      title: Text(filteredItems[index]['title']),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class ArchiveItemPage extends StatelessWidget {
   final String archiv_itemid;
 
@@ -1001,6 +1347,28 @@ class ArchiveItemPage extends StatelessWidget {
                                   subtitle:
                                       Text(snapshot.data!.first['description']),
                                 )),
+                                Card(
+                                  color:
+                                      snapshot.data!.first['approval_status'] ==
+                                              '1'
+                                          ? Colors.green
+                                          : Colors.red,
+                                  child: ListTile(
+                                    title: const Text('Skript überprüfung'),
+                                    subtitle: snapshot.data!
+                                                .first['approval_status'] ==
+                                            '1'
+                                        ? const Text(
+                                            'Das Skript wurde von einem Moderator bestätigt')
+                                        : const Text(
+                                            'Das Skript wurde noch nicht überprüft'),
+                                    trailing: snapshot.data!
+                                                .first['approval_status'] ==
+                                            '1'
+                                        ? const Icon(Icons.check_circle)
+                                        : const Icon(Icons.error),
+                                  ),
+                                ),
                                 Visibility(
                                   visible:
                                       snapshot.data!.first['command'] != null,
@@ -1082,6 +1450,142 @@ class ArchiveItemPage extends StatelessWidget {
                                 )),
                                 Card(
                                     child: ListTile(
+                                  title: const Text('Bereitgestellt durch'),
+                                  subtitle:
+                                      Text(snapshot2.data!.first['username']),
+                                ))
+                              ],
+                            ),
+                          ));
+                    }
+                    throw ();
+                  });
+            }
+            throw ();
+          }),
+    );
+  }
+}
+
+class SkriptItemPage extends StatelessWidget {
+  final String skriptid;
+
+  const SkriptItemPage({super.key, required this.skriptid});
+
+  void setClipboardText(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+  }
+
+  void _showSnackbar(BuildContext context) {
+    final scaffold = ScaffoldMessenger.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+        content: const Text('Inhalt wurde in die Zwischenablage gespeichert'),
+        action: SnackBarAction(
+            label: 'OK', onPressed: scaffold.hideCurrentSnackBar),
+      ),
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getSkriptItem() async {
+    var result = await DatabaseService()
+        .executeQuery('SELECT * FROM skripte WHERE skript_id = $skriptid');
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getProfile(String authorid) async {
+    var result = await DatabaseService()
+        .executeQuery('SELECT * FROM profil WHERE profile_id = $authorid');
+    return result;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Skript'),
+      ),
+      body: FutureBuilder(
+          future: getSkriptItem(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator();
+            } else if (snapshot.hasError) {
+              return Container();
+            } else if (snapshot.hasData) {
+              return FutureBuilder(
+                  future: getProfile(snapshot.data!.first['profile_id']),
+                  builder: (context, snapshot2) {
+                    if (snapshot2.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else if (snapshot2.hasError) {
+                      return Container();
+                    } else if (snapshot2.hasData) {
+                      return Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                Card(
+                                    child: ListTile(
+                                  title: Text(snapshot.data!.first['title']),
+                                  subtitle:
+                                      Text(snapshot.data!.first['description']),
+                                )),
+                                Card(
+                                  color:
+                                      snapshot.data!.first['approval_status'] ==
+                                              '1'
+                                          ? Colors.green
+                                          : Colors.red,
+                                  child: ListTile(
+                                    title: const Text('Skript überprüfung'),
+                                    subtitle: snapshot.data!
+                                                .first['approval_status'] ==
+                                            '1'
+                                        ? const Text(
+                                            'Das Skript wurde von einem Moderator bestätigt')
+                                        : const Text(
+                                            'Das Skript wurde noch nicht überprüft'),
+                                    trailing: snapshot.data!
+                                                .first['approval_status'] ==
+                                            '1'
+                                        ? const Icon(Icons.check_circle)
+                                        : const Icon(Icons.error),
+                                  ),
+                                ),
+                                const SizedBox(height: 25),
+                                Card(
+                                  color: Colors.blue,
+                                  child: ListTile(
+                                    onTap: () {
+                                      setClipboardText(snapshot
+                                          .data!.first['script']
+                                          .toString()
+                                          .replaceAll("\\n", "\n"));
+                                      _showSnackbar(context);
+                                    },
+                                    title: const Text('Skript kopieren'),
+                                    trailing: Icon(Icons.copy),
+                                  ),
+                                ),
+                                Card(
+                                  child: ExpansionTile(
+                                    title: const Text('Skript:'),
+                                    children: [
+                                      ListTile(
+                                        subtitle: Text(snapshot
+                                            .data!.first['script']
+                                            .toString()
+                                            .replaceAll("\\n", "\n")),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 25),
+                                Card(
+                                    child: ListTile(
+                                  onTap: () {},
                                   title: const Text('Bereitgestellt durch'),
                                   subtitle:
                                       Text(snapshot2.data!.first['username']),
@@ -1541,7 +2045,7 @@ class MessagePageState extends State<MessagePage> {
                                 messages.elementAt(index)['from_profile_id'] ==
                                     own_profileid.toString(),
                             child: Card(
-                              color: const Color.fromARGB(255, 42, 116, 46),
+                              color: Colors.green,
                               child: Padding(
                                 padding: const EdgeInsets.all(5.0),
                                 child: ListTile(
@@ -1596,7 +2100,7 @@ class MessagePageState extends State<MessagePage> {
                                 messages.elementAt(index)['from_profile_id'] ==
                                     profileid.toString(),
                             child: Card(
-                              color: const Color.fromARGB(255, 25, 97, 156),
+                              color: Colors.blue,
                               child: Padding(
                                 padding: const EdgeInsets.all(5.0),
                                 child: ListTile(
