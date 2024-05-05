@@ -1917,7 +1917,7 @@ class LoginPage extends StatelessWidget {
             child: Column(
               children: [
                 TextField(
-                  onChanged: (value) => email = value,
+                  onChanged: (value) => email = value.replaceAll(' ', ''),
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     hintText: 'Gib hier deine Email ein',
