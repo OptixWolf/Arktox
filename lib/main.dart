@@ -172,6 +172,7 @@ class _HomepageState extends State<Homepage> {
   }
 
   Future<List<String>> getContacts() async {
+    contacts.clear();
     var users =
         await DatabaseService().executeQuery('SELECT profile_id FROM profil');
     if (users.isNotEmpty) {
