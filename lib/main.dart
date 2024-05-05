@@ -393,42 +393,25 @@ class _HomepageState extends State<Homepage> {
                               ),
                               Visibility(
                                 visible: loggedIn && own_items.isNotEmpty,
-                                child: Expanded(
-                                  flex: 4,
-                                  child: Column(
-                                    children: [
-                                      const SizedBox(height: 15),
-                                      const Row(children: [
-                                        SizedBox(width: 7),
-                                        Text('Eigene Archiv Einträge',
-                                            style: TextStyle(fontSize: 25)),
-                                      ]),
-                                      const SizedBox(height: 5),
-                                      Expanded(
-                                        child: ListView.builder(
-                                          padding: EdgeInsets.zero,
-                                          itemCount: own_items.length,
-                                          itemBuilder: (context, index) {
-                                            return Card(
-                                              child: ListTile(
-                                                  onTap: () {
-                                                    Navigator.of(context).push(
-                                                        MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                ArchiveItemPage(
-                                                                    archiv_itemid:
-                                                                        own_items
-                                                                            .elementAt(index)['archiv_item_id'])));
-                                                  },
-                                                  title: Text(
-                                                      own_items.elementAt(
-                                                          index)['title'])),
-                                            );
-                                          },
-                                        ),
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 20),
+                                    Card(
+                                      child: ListTile(
+                                        title: const Text(
+                                            'Eigene Archiv Einträge'),
+                                        trailing: const Icon(Icons.open_in_new),
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      SelectOwnArchiveItemPage(
+                                                          own_profile_id:
+                                                              own_profile_id)));
+                                        },
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(height: 10),
@@ -557,42 +540,24 @@ class _HomepageState extends State<Homepage> {
                               ),
                               Visibility(
                                 visible: loggedIn && own_items.isNotEmpty,
-                                child: Expanded(
-                                  flex: 4,
-                                  child: Column(
-                                    children: [
-                                      const SizedBox(height: 15),
-                                      const Row(children: [
-                                        SizedBox(width: 7),
-                                        Text('Eigene Skripte',
-                                            style: TextStyle(fontSize: 25)),
-                                      ]),
-                                      const SizedBox(height: 5),
-                                      Expanded(
-                                        child: ListView.builder(
-                                          padding: EdgeInsets.zero,
-                                          itemCount: own_items.length,
-                                          itemBuilder: (context, index) {
-                                            return Card(
-                                              child: ListTile(
-                                                  onTap: () {
-                                                    Navigator.of(context).push(
-                                                        MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                SkriptItemPage(
-                                                                    skriptid: own_items
-                                                                        .elementAt(
-                                                                            index)['skript_id'])));
-                                                  },
-                                                  title: Text(
-                                                      own_items.elementAt(
-                                                          index)['title'])),
-                                            );
-                                          },
-                                        ),
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 20),
+                                    Card(
+                                      child: ListTile(
+                                        title: const Text('Eigene Skripte'),
+                                        trailing: const Icon(Icons.open_in_new),
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      SelectOwnSkriptItemPage(
+                                                          own_profile_id:
+                                                              own_profile_id)));
+                                        },
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               const SizedBox(height: 10),
@@ -1158,6 +1123,222 @@ class SelectArchiveItemPageState extends State<SelectArchiveItemPage> {
   }
 }
 
+class SelectOwnArchiveItemPage extends StatefulWidget {
+  final int own_profile_id;
+
+  const SelectOwnArchiveItemPage({super.key, required this.own_profile_id});
+
+  @override
+  SelectOwnArchiveItemPageState createState() =>
+      SelectOwnArchiveItemPageState();
+}
+
+class SelectOwnArchiveItemPageState extends State<SelectOwnArchiveItemPage> {
+  List<Map<String, dynamic>> items = [];
+  List<Map<String, dynamic>> filteredItems = [];
+  String constantFilterString = "[Archiviert]";
+
+  @override
+  void initState() {
+    super.initState();
+    Preferences.getPref('archived').then((archivedValue) {
+      if (!archivedValue) {
+        constantFilterString = "fijeghuioefbuognberonbgoierngioenbrognokenr";
+      }
+      loadItems();
+    });
+  }
+
+  Future<void> loadItems() async {
+    var result = await DatabaseService().executeQuery(
+        'SELECT * FROM archiv_eintraege WHERE profile_id = ' +
+            widget.own_profile_id.toString() +
+            '');
+    setState(() {
+      items = result;
+      items = items
+          .where((item) => !item['title']
+              .toString()
+              .toLowerCase()
+              .contains(constantFilterString.toLowerCase()))
+          .toList();
+      filteredItems = items;
+    });
+  }
+
+  void filterItems(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        filteredItems = items;
+      } else {
+        filteredItems = items
+            .where((item) => item['title']
+                .toString()
+                .toLowerCase()
+                .contains(query.toLowerCase()))
+            .toList();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Deine Archiv Einträge'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            TextField(
+              onChanged: filterItems,
+              decoration: const InputDecoration(
+                labelText: 'Suche',
+                hintText: 'Suche',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: ListView.builder(
+                itemCount: filteredItems.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    child: ListTile(
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => ArchiveItemPage(
+                                  archiv_itemid: filteredItems[index]
+                                      ['archiv_item_id'],
+                                )));
+                      },
+                      title: Text(filteredItems[index]['title']),
+                      trailing: filteredItems[index]['approval_status'] == '1'
+                          ? const Icon(Icons.check)
+                          : const Icon(Icons.error),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SelectOwnSkriptItemPage extends StatefulWidget {
+  final int own_profile_id;
+
+  const SelectOwnSkriptItemPage({super.key, required this.own_profile_id});
+
+  @override
+  SelectOwnSkriptItemPageState createState() => SelectOwnSkriptItemPageState();
+}
+
+class SelectOwnSkriptItemPageState extends State<SelectOwnSkriptItemPage> {
+  List<Map<String, dynamic>> items = [];
+  List<Map<String, dynamic>> filteredItems = [];
+  String constantFilterString = "[Archiviert]";
+
+  @override
+  void initState() {
+    super.initState();
+    Preferences.getPref('archived').then((archivedValue) {
+      if (!archivedValue) {
+        constantFilterString = "fijeghuioefbuognberonbgoierngioenbrognokenr";
+      }
+      loadItems();
+    });
+  }
+
+  Future<void> loadItems() async {
+    var result = await DatabaseService().executeQuery(
+        'SELECT * FROM skripte WHERE profile_id = ' +
+            widget.own_profile_id.toString() +
+            '');
+    setState(() {
+      items = result;
+      items = items
+          .where((item) => !item['title']
+              .toString()
+              .toLowerCase()
+              .contains(constantFilterString.toLowerCase()))
+          .toList();
+      filteredItems = items;
+    });
+  }
+
+  void filterItems(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        filteredItems = items;
+      } else {
+        filteredItems = items
+            .where((item) => item['title']
+                .toString()
+                .toLowerCase()
+                .contains(query.toLowerCase()))
+            .toList();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Deine Skripte'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            TextField(
+              onChanged: filterItems,
+              decoration: const InputDecoration(
+                labelText: 'Suche',
+                hintText: 'Suche',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: ListView.builder(
+                itemCount: filteredItems.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    child: ListTile(
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => SkriptItemPage(
+                                  skriptid: filteredItems[index]['skript_id'],
+                                )));
+                      },
+                      title: Text(filteredItems[index]['title']),
+                      trailing: filteredItems[index]['approval_status'] == '1'
+                          ? const Icon(Icons.check)
+                          : const Icon(Icons.error),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class SelectSkriptItemPage extends StatefulWidget {
   final String kategorieid;
   final String plattformid;
@@ -1566,7 +1747,7 @@ class SkriptItemPage extends StatelessWidget {
                                       _showSnackbar(context);
                                     },
                                     title: const Text('Skript kopieren'),
-                                    trailing: Icon(Icons.copy),
+                                    trailing: const Icon(Icons.copy),
                                   ),
                                 ),
                                 Card(
