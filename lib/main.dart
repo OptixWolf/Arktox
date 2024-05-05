@@ -322,7 +322,7 @@ class _HomepageState extends State<Homepage> {
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
                             children: [
-                              const SizedBox(height: 50),
+                              const SizedBox(height: 20),
                               const Row(
                                 children: [
                                   SizedBox(width: 7),
@@ -484,7 +484,7 @@ class _HomepageState extends State<Homepage> {
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
                             children: [
-                              const SizedBox(height: 50),
+                              const SizedBox(height: 20),
                               const Row(
                                 children: [
                                   SizedBox(width: 7),
@@ -605,6 +605,7 @@ class _HomepageState extends State<Homepage> {
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
+              const SizedBox(height: 20),
               const Row(
                 children: [
                   SizedBox(width: 7),
@@ -690,6 +691,7 @@ class _HomepageState extends State<Homepage> {
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
                             children: [
+                              const SizedBox(height: 20),
                               const Row(children: [
                                 SizedBox(width: 7),
                                 Text('Nachrichten',
@@ -700,7 +702,7 @@ class _HomepageState extends State<Homepage> {
                               ),
                               const Row(children: [
                                 SizedBox(width: 7),
-                                Text('Kontake:',
+                                Text('Kontakte:',
                                     style: TextStyle(fontSize: 25)),
                               ]),
                               Visibility(
@@ -824,6 +826,7 @@ class _HomepageState extends State<Homepage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
+                const SizedBox(height: 20),
                 const Row(children: [
                   SizedBox(width: 7),
                   Text('Einstellungen', style: TextStyle(fontSize: 50)),
@@ -2462,13 +2465,14 @@ class MessagePageState extends State<MessagePage> {
                                   DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
 
                               DatabaseService().executeQuery(
-                                  'INSERT INTO nachrichten(from_profile_id, to_profile_id, message, attachement_link, readed, message_send_at) VALUES($own_profileid, $profileid, \'$value\', \'\', 0, \'$formattedDate\')');
+                                  'INSERT INTO nachrichten(from_profile_id, to_profile_id, message, attachement_link, readed, message_send_at) VALUES($own_profileid, $profileid, \'$message\', \'\', 0, \'$formattedDate\')');
                               _textController.clear();
                               scrollDown = true;
                             }
                           },
                           controller: _textController,
-                          onChanged: (value) => message = value,
+                          onChanged: (value) =>
+                              message = value.replaceAll('\'', '\'\''),
                           decoration: const InputDecoration(
                             labelText: 'Nachricht',
                             hintText: 'Gib hier deine Nachricht ein...',
