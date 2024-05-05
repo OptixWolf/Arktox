@@ -342,11 +342,14 @@ class _HomepageState extends State<Homepage> {
                                               MaterialPageRoute(
                                                   builder: (context) =>
                                                       PlattformPage(
-                                                          kategorieid: snapshot
-                                                                  .data!
-                                                                  .elementAt(
-                                                                      index)[
-                                                              'kategorie_id'])));
+                                                        kategorieid: snapshot
+                                                                .data!
+                                                                .elementAt(
+                                                                    index)[
+                                                            'kategorie_id'],
+                                                        own_profile_id:
+                                                            own_profile_id,
+                                                      )));
                                         },
                                         title: Text(snapshot.data!
                                             .elementAt(index)['kategorie']),
@@ -374,15 +377,19 @@ class _HomepageState extends State<Homepage> {
                                     return Card(
                                       child: ListTile(
                                           onTap: () {
-                                            Navigator.of(context).push(MaterialPageRoute(
-                                                builder: (context) => ArchiveItemPage(
-                                                    archiv_itemid: verified_items
-                                                            .elementAt(
-                                                                verified_items
-                                                                        .length -
-                                                                    index -
-                                                                    1)[
-                                                        'archiv_item_id'])));
+                                            Navigator.of(context)
+                                                .push(MaterialPageRoute(
+                                                    builder:
+                                                        (context) =>
+                                                            ArchiveItemPage(
+                                                              archiv_itemid: verified_items.elementAt(
+                                                                  verified_items
+                                                                          .length -
+                                                                      index -
+                                                                      1)['archiv_item_id'],
+                                                              own_profile_id:
+                                                                  own_profile_id,
+                                                            )));
                                           },
                                           title: Text(verified_items.elementAt(
                                               verified_items.length -
@@ -491,11 +498,14 @@ class _HomepageState extends State<Homepage> {
                                               MaterialPageRoute(
                                                   builder: (context) =>
                                                       SkriptePlattformPage(
-                                                          kategorieid: snapshot
-                                                                  .data!
-                                                                  .elementAt(
-                                                                      index)[
-                                                              'kategorie_id'])));
+                                                        kategorieid: snapshot
+                                                                .data!
+                                                                .elementAt(
+                                                                    index)[
+                                                            'kategorie_id'],
+                                                        own_profile_id:
+                                                            own_profile_id,
+                                                      )));
                                         },
                                         title: Text(snapshot.data!
                                             .elementAt(index)['kategorie']),
@@ -523,13 +533,18 @@ class _HomepageState extends State<Homepage> {
                                     return Card(
                                       child: ListTile(
                                           onTap: () {
-                                            Navigator.of(context).push(MaterialPageRoute(
-                                                builder: (context) => SkriptItemPage(
-                                                    skriptid: verified_items
-                                                        .elementAt(verified_items
-                                                                .length -
-                                                            index -
-                                                            1)['skript_id'])));
+                                            Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        SkriptItemPage(
+                                                          skriptid: verified_items
+                                                              .elementAt(verified_items
+                                                                      .length -
+                                                                  index -
+                                                                  1)['skript_id'],
+                                                          own_profile_id:
+                                                              own_profile_id,
+                                                        )));
                                           },
                                           title: Text(verified_items.elementAt(
                                               verified_items.length -
@@ -904,8 +919,10 @@ class _HomepageState extends State<Homepage> {
 
 class PlattformPage extends StatelessWidget {
   final String kategorieid;
+  final int own_profile_id;
 
-  const PlattformPage({super.key, required this.kategorieid});
+  const PlattformPage(
+      {super.key, required this.kategorieid, required this.own_profile_id});
 
   Future<List<Map<String, dynamic>>> getArchivePlatforms() async {
     var result = await DatabaseService().executeQuery(
@@ -941,6 +958,7 @@ class PlattformPage extends StatelessWidget {
                                       kategorieid: kategorieid,
                                       plattformid: snapshot.data!
                                           .elementAt(index)['plattform_id'],
+                                      own_profile_id: own_profile_id,
                                     )));
                           },
                           title: Text(
@@ -960,8 +978,10 @@ class PlattformPage extends StatelessWidget {
 
 class SkriptePlattformPage extends StatelessWidget {
   final String kategorieid;
+  final int own_profile_id;
 
-  const SkriptePlattformPage({super.key, required this.kategorieid});
+  const SkriptePlattformPage(
+      {super.key, required this.kategorieid, required this.own_profile_id});
 
   Future<List<Map<String, dynamic>>> getArchivePlatforms() async {
     var result = await DatabaseService().executeQuery(
@@ -997,6 +1017,7 @@ class SkriptePlattformPage extends StatelessWidget {
                                       kategorieid: kategorieid,
                                       plattformid: snapshot.data!
                                           .elementAt(index)['plattform_id'],
+                                      own_profile_id: own_profile_id,
                                     )));
                           },
                           title: Text(
@@ -1017,9 +1038,13 @@ class SkriptePlattformPage extends StatelessWidget {
 class SelectArchiveItemPage extends StatefulWidget {
   final String kategorieid;
   final String plattformid;
+  final int own_profile_id;
 
   const SelectArchiveItemPage(
-      {super.key, required this.kategorieid, required this.plattformid});
+      {super.key,
+      required this.kategorieid,
+      required this.plattformid,
+      required this.own_profile_id});
 
   @override
   SelectArchiveItemPageState createState() => SelectArchiveItemPageState();
@@ -1108,6 +1133,7 @@ class SelectArchiveItemPageState extends State<SelectArchiveItemPage> {
                             builder: (context) => ArchiveItemPage(
                                   archiv_itemid: filteredItems[index]
                                       ['archiv_item_id'],
+                                  own_profile_id: widget.own_profile_id,
                                 )));
                       },
                       title: Text(filteredItems[index]['title']),
@@ -1214,6 +1240,7 @@ class SelectOwnArchiveItemPageState extends State<SelectOwnArchiveItemPage> {
                             builder: (context) => ArchiveItemPage(
                                   archiv_itemid: filteredItems[index]
                                       ['archiv_item_id'],
+                                  own_profile_id: widget.own_profile_id,
                                 )));
                       },
                       title: Text(filteredItems[index]['title']),
@@ -1321,6 +1348,7 @@ class SelectOwnSkriptItemPageState extends State<SelectOwnSkriptItemPage> {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => SkriptItemPage(
                                   skriptid: filteredItems[index]['skript_id'],
+                                  own_profile_id: widget.own_profile_id,
                                 )));
                       },
                       title: Text(filteredItems[index]['title']),
@@ -1342,9 +1370,13 @@ class SelectOwnSkriptItemPageState extends State<SelectOwnSkriptItemPage> {
 class SelectSkriptItemPage extends StatefulWidget {
   final String kategorieid;
   final String plattformid;
+  final int own_profile_id;
 
   const SelectSkriptItemPage(
-      {super.key, required this.kategorieid, required this.plattformid});
+      {super.key,
+      required this.kategorieid,
+      required this.plattformid,
+      required this.own_profile_id});
 
   @override
   SelectSkriptItemPageState createState() => SelectSkriptItemPageState();
@@ -1432,6 +1464,7 @@ class SelectSkriptItemPageState extends State<SelectSkriptItemPage> {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => SkriptItemPage(
                                   skriptid: filteredItems[index]['skript_id'],
+                                  own_profile_id: widget.own_profile_id,
                                 )));
                       },
                       title: Text(filteredItems[index]['title']),
@@ -1449,8 +1482,10 @@ class SelectSkriptItemPageState extends State<SelectSkriptItemPage> {
 
 class ArchiveItemPage extends StatelessWidget {
   final String archiv_itemid;
+  final int own_profile_id;
 
-  const ArchiveItemPage({super.key, required this.archiv_itemid});
+  const ArchiveItemPage(
+      {super.key, required this.archiv_itemid, required this.own_profile_id});
 
   void setClipboardText(String text) {
     Clipboard.setData(ClipboardData(text: text));
@@ -1631,9 +1666,25 @@ class ArchiveItemPage extends StatelessWidget {
                                 )),
                                 Card(
                                     child: ListTile(
+                                  leading: CircleAvatar(
+                                      backgroundImage: NetworkImage(snapshot2
+                                              .data!.first['profilbild_link'] ??
+                                          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmHkj6-Tndku8K2387sMaBf2DaiwfBtHQw951-fc9zzA&s')),
                                   title: const Text('Bereitgestellt durch'),
                                   subtitle:
                                       Text(snapshot2.data!.first['username']),
+                                  trailing: const Icon(Icons.person),
+                                  onTap: () {
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                            builder: (context) => ProfilePage(
+                                                  own_profile_id:
+                                                      own_profile_id,
+                                                  profile_id: int.parse(
+                                                      snapshot2.data!
+                                                          .first['profile_id']),
+                                                )));
+                                  },
                                 ))
                               ],
                             ),
@@ -1650,8 +1701,10 @@ class ArchiveItemPage extends StatelessWidget {
 
 class SkriptItemPage extends StatelessWidget {
   final String skriptid;
+  final int own_profile_id;
 
-  const SkriptItemPage({super.key, required this.skriptid});
+  const SkriptItemPage(
+      {super.key, required this.skriptid, required this.own_profile_id});
 
   void setClipboardText(String text) {
     Clipboard.setData(ClipboardData(text: text));
@@ -1766,10 +1819,25 @@ class SkriptItemPage extends StatelessWidget {
                                 const SizedBox(height: 25),
                                 Card(
                                     child: ListTile(
-                                  onTap: () {},
+                                  leading: CircleAvatar(
+                                      backgroundImage: NetworkImage(snapshot2
+                                              .data!.first['profilbild_link'] ??
+                                          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmHkj6-Tndku8K2387sMaBf2DaiwfBtHQw951-fc9zzA&s')),
                                   title: const Text('Bereitgestellt durch'),
                                   subtitle:
                                       Text(snapshot2.data!.first['username']),
+                                  trailing: const Icon(Icons.person),
+                                  onTap: () {
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                            builder: (context) => ProfilePage(
+                                                  own_profile_id:
+                                                      own_profile_id,
+                                                  profile_id: int.parse(
+                                                      snapshot2.data!
+                                                          .first['profile_id']),
+                                                )));
+                                  },
                                 ))
                               ],
                             ),
