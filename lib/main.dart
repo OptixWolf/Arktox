@@ -13,6 +13,7 @@ import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'dialog.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
+import 'package:intl/intl.dart';
 
 void main() async {
   runApp(Phoenix(child: ArktoxApp()));
@@ -2006,6 +2007,7 @@ class ProfilePageState extends State<ProfilePage> {
   int own_profileid = -1;
   bool following = false;
   int profile_follower_count = 0;
+  String creation_date = '';
 
   @override
   void initState() {
@@ -2039,6 +2041,20 @@ class ProfilePageState extends State<ProfilePage> {
                 int.parse(value.first['COUNT(follower_id)']);
           });
         }
+      },
+    );
+
+    DatabaseService()
+        .executeQuery(
+            'SELECT * FROM nutzerdaten WHERE user_id = (SELECT user_id FROM profil WHERE profile_id = $profileid)')
+        .then(
+      (value) {
+        creation_date = value.first['created_at'].toString();
+
+        DateFormat originalFormat = DateFormat('yyyy-MM-dd');
+        DateFormat newFormat = DateFormat('dd.MM.yyyy');
+
+        creation_date = newFormat.format(originalFormat.parse(creation_date));
       },
     );
   }
@@ -2128,24 +2144,37 @@ class ProfilePageState extends State<ProfilePage> {
                                 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmHkj6-Tndku8K2387sMaBf2DaiwfBtHQw951-fc9zzA&s'),
                           ),
                           title: Text(snapshot.data?.first['username']),
-                          subtitle: Text(snapshot.data?.first['about_me'] ??
-                              'Willkommen auf meinem Profil!'),
+                          subtitle: Text('Dabei seit: ' + creation_date),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              IconButton(
-                                icon: following
-                                    ? const Icon(Icons.favorite)
-                                    : const Icon(Icons.favorite_outline),
-                                onPressed: () {
-                                  if (own_profileid != -1) {
-                                    changeFollowStatus();
-                                  }
-                                },
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: following
+                                        ? const Icon(Icons.favorite)
+                                        : const Icon(Icons.favorite_outline),
+                                    onPressed: () {
+                                      if (own_profileid != -1) {
+                                        changeFollowStatus();
+                                      }
+                                    },
+                                  ),
+                                  Text('$profile_follower_count Follower'),
+                                ],
                               ),
-                              Text('$profile_follower_count Follower'),
                             ],
                           ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Card(
+                        margin: EdgeInsets.zero,
+                        child: ListTile(
+                          title: const Text('Über mich:'),
+                          subtitle: Text(snapshot.data?.first['about_me'],
+                              style: const TextStyle(fontSize: 14)),
                         ),
                       ),
                       const SizedBox(height: 10),
