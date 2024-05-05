@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto/crypto.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'database.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'dialog.dart';
@@ -281,7 +282,10 @@ class _HomepageState extends State<Homepage> {
             future: getArchivKategorien(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
+                return Center(
+                  child: LoadingAnimationWidget.threeArchedCircle(
+                      color: Colors.blueGrey, size: 75),
+                );
               } else if (snapshot.hasError) {
                 return Container();
               } else if (snapshot.hasData) {
@@ -290,7 +294,10 @@ class _HomepageState extends State<Homepage> {
                     builder: (context, snapshot2) {
                       if (snapshot2.connectionState ==
                           ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
+                        return Center(
+                          child: LoadingAnimationWidget.threeArchedCircle(
+                              color: Colors.blueGrey, size: 75),
+                        );
                       } else if (snapshot2.hasError) {
                         return Container();
                       } else if (snapshot2.hasData) {
@@ -437,7 +444,10 @@ class _HomepageState extends State<Homepage> {
             future: getSkripteKategorien(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
+                return Center(
+                  child: LoadingAnimationWidget.threeArchedCircle(
+                      color: Colors.blueGrey, size: 75),
+                );
               } else if (snapshot.hasError) {
                 return Container();
               } else if (snapshot.hasData) {
@@ -446,7 +456,10 @@ class _HomepageState extends State<Homepage> {
                     builder: (context, snapshot2) {
                       if (snapshot2.connectionState ==
                           ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
+                        return Center(
+                          child: LoadingAnimationWidget.threeArchedCircle(
+                              color: Colors.blueGrey, size: 75),
+                        );
                       } else if (snapshot2.hasError) {
                         return Container();
                       } else if (snapshot2.hasData) {
@@ -654,7 +667,10 @@ class _HomepageState extends State<Homepage> {
             future: getContacts(),
             builder: (context, snapshot2) {
               if (snapshot2.connectionState == ConnectionState.waiting) {
-                return const CircularProgressIndicator();
+                return Center(
+                  child: LoadingAnimationWidget.threeArchedCircle(
+                      color: Colors.blueGrey, size: 75),
+                );
               } else if (snapshot2.hasError) {
                 return Container();
               } else if (snapshot2.hasData) {
@@ -662,7 +678,10 @@ class _HomepageState extends State<Homepage> {
                     future: getMessages(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
+                        return Center(
+                          child: LoadingAnimationWidget.threeArchedCircle(
+                              color: Colors.blueGrey, size: 75),
+                        );
                       } else if (snapshot.hasError) {
                         return Container();
                       } else if (snapshot.hasData) {
@@ -940,7 +959,10 @@ class PlattformPage extends StatelessWidget {
           future: getArchivePlatforms(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
+              return Center(
+                child: LoadingAnimationWidget.threeArchedCircle(
+                    color: Colors.blueGrey, size: 75),
+              );
             } else if (snapshot.hasError) {
               return Container();
             } else if (snapshot.hasData) {
@@ -999,7 +1021,10 @@ class SkriptePlattformPage extends StatelessWidget {
           future: getArchivePlatforms(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
+              return Center(
+                child: LoadingAnimationWidget.threeArchedCircle(
+                    color: Colors.blueGrey, size: 75),
+              );
             } else if (snapshot.hasError) {
               return Container();
             } else if (snapshot.hasData) {
@@ -1524,7 +1549,10 @@ class ArchiveItemPage extends StatelessWidget {
           future: getArchiveItem(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
+              return Center(
+                child: LoadingAnimationWidget.threeArchedCircle(
+                    color: Colors.blueGrey, size: 75),
+              );
             } else if (snapshot.hasError) {
               return Container();
             } else if (snapshot.hasData) {
@@ -1532,7 +1560,10 @@ class ArchiveItemPage extends StatelessWidget {
                   future: getProfile(snapshot.data!.first['profile_id']),
                   builder: (context, snapshot2) {
                     if (snapshot2.connectionState == ConnectionState.waiting) {
-                      return const CircularProgressIndicator();
+                      return Center(
+                        child: LoadingAnimationWidget.threeArchedCircle(
+                            color: Colors.blueGrey, size: 75),
+                      );
                     } else if (snapshot2.hasError) {
                       return Container();
                     } else if (snapshot2.hasData) {
@@ -1743,7 +1774,10 @@ class SkriptItemPage extends StatelessWidget {
           future: getSkriptItem(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
+              return Center(
+                child: LoadingAnimationWidget.threeArchedCircle(
+                    color: Colors.blueGrey, size: 75),
+              );
             } else if (snapshot.hasError) {
               return Container();
             } else if (snapshot.hasData) {
@@ -1751,7 +1785,10 @@ class SkriptItemPage extends StatelessWidget {
                   future: getProfile(snapshot.data!.first['profile_id']),
                   builder: (context, snapshot2) {
                     if (snapshot2.connectionState == ConnectionState.waiting) {
-                      return const CircularProgressIndicator();
+                      return Center(
+                        child: LoadingAnimationWidget.threeArchedCircle(
+                            color: Colors.blueGrey, size: 75),
+                      );
                     } else if (snapshot2.hasError) {
                       return Container();
                     } else if (snapshot2.hasData) {
@@ -2032,7 +2069,10 @@ class ProfilePageState extends State<ProfilePage> {
           future: getProfileDetails(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
+              return Center(
+                child: LoadingAnimationWidget.threeArchedCircle(
+                    color: Colors.blueGrey, size: 75),
+              );
             } else if (snapshot.hasError) {
               return Container();
             } else if (snapshot.hasData) {
