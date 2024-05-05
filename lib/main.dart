@@ -2135,7 +2135,9 @@ class ProfilePageState extends State<ProfilePage> {
                                     ? const Icon(Icons.favorite)
                                     : const Icon(Icons.favorite_outline),
                                 onPressed: () {
-                                  changeFollowStatus();
+                                  if (own_profileid != -1) {
+                                    changeFollowStatus();
+                                  }
                                 },
                               ),
                               Text('$profile_follower_count Follower'),
