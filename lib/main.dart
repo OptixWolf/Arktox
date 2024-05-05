@@ -636,6 +636,7 @@ class _HomepageState extends State<Homepage> {
               ),
               Expanded(
                   child: ListView.builder(
+                padding: EdgeInsets.zero,
                 itemCount: filteredItems.length > 9 ? 10 : filteredItems.length,
                 itemBuilder: (context, index) {
                   final item = filteredItems[index];
@@ -721,6 +722,7 @@ class _HomepageState extends State<Homepage> {
                                     items.isNotEmpty,
                                 child: Expanded(
                                   child: ListView.builder(
+                                    padding: EdgeInsets.zero,
                                     itemCount: snapshot2.data!.length,
                                     itemBuilder: (context, index) {
                                       String username = '';
