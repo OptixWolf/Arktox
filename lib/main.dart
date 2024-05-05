@@ -314,6 +314,7 @@ class _HomepageState extends State<Homepage> {
                           padding: const EdgeInsets.all(20.0),
                           child: Column(
                             children: [
+                              const SizedBox(height: 50),
                               const Row(
                                 children: [
                                   SizedBox(width: 7),
@@ -321,15 +322,16 @@ class _HomepageState extends State<Homepage> {
                                       style: TextStyle(fontSize: 50)),
                                 ],
                               ),
-                              const SizedBox(height: 25),
+                              const SizedBox(height: 10),
                               const Row(children: [
                                 SizedBox(width: 7),
                                 Text('Kategorien',
                                     style: TextStyle(fontSize: 25)),
                               ]),
-                              const SizedBox(height: 15),
+                              const SizedBox(height: 5),
                               Expanded(
                                 child: ListView.builder(
+                                  padding: EdgeInsets.zero,
                                   itemCount: snapshot.data!.length,
                                   itemBuilder: (context, index) {
                                     return Card(
@@ -352,15 +354,16 @@ class _HomepageState extends State<Homepage> {
                                   },
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 15),
                               const Row(children: [
                                 SizedBox(width: 7),
                                 Text('Neuesten Archiv Einträge',
                                     style: TextStyle(fontSize: 25)),
                               ]),
-                              const SizedBox(height: 15),
+                              const SizedBox(height: 5),
                               Expanded(
                                 child: ListView.builder(
+                                  padding: EdgeInsets.zero,
                                   itemCount: verified_items.length > 4
                                       ? 5
                                       : verified_items.length,
@@ -386,15 +389,16 @@ class _HomepageState extends State<Homepage> {
                                   },
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 15),
                               const Row(children: [
                                 SizedBox(width: 7),
                                 Text('Eigene Archiv Einträge',
                                     style: TextStyle(fontSize: 25)),
                               ]),
-                              const SizedBox(height: 15),
+                              const SizedBox(height: 5),
                               Expanded(
                                 child: ListView.builder(
+                                  padding: EdgeInsets.zero,
                                   itemCount: own_items.length,
                                   itemBuilder: (context, index) {
                                     return Card(
@@ -405,7 +409,7 @@ class _HomepageState extends State<Homepage> {
                                   },
                                 ),
                               ),
-                              const SizedBox(height: 25),
+                              const SizedBox(height: 20),
                             ],
                           ),
                         );
