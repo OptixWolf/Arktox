@@ -968,27 +968,31 @@ class PlattformPage extends StatelessWidget {
             } else if (snapshot.hasData) {
               return Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Expanded(
-                  child: ListView.builder(
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        child: ListTile(
-                          onTap: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => SelectArchiveItemPage(
-                                      kategorieid: kategorieid,
-                                      plattformid: snapshot.data!
-                                          .elementAt(index)['plattform_id'],
-                                      own_profile_id: own_profile_id,
-                                    )));
-                          },
-                          title: Text(
-                              snapshot.data!.elementAt(index)['plattform']),
-                        ),
-                      );
-                    },
-                  ),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            child: ListTile(
+                              onTap: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => SelectArchiveItemPage(
+                                          kategorieid: kategorieid,
+                                          plattformid: snapshot.data!
+                                              .elementAt(index)['plattform_id'],
+                                          own_profile_id: own_profile_id,
+                                        )));
+                              },
+                              title: Text(
+                                  snapshot.data!.elementAt(index)['plattform']),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               );
             }
@@ -1030,27 +1034,31 @@ class SkriptePlattformPage extends StatelessWidget {
             } else if (snapshot.hasData) {
               return Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Expanded(
-                  child: ListView.builder(
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        child: ListTile(
-                          onTap: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => SelectSkriptItemPage(
-                                      kategorieid: kategorieid,
-                                      plattformid: snapshot.data!
-                                          .elementAt(index)['plattform_id'],
-                                      own_profile_id: own_profile_id,
-                                    )));
-                          },
-                          title: Text(
-                              snapshot.data!.elementAt(index)['plattform']),
-                        ),
-                      );
-                    },
-                  ),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            child: ListTile(
+                              onTap: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => SelectSkriptItemPage(
+                                          kategorieid: kategorieid,
+                                          plattformid: snapshot.data!
+                                              .elementAt(index)['plattform_id'],
+                                          own_profile_id: own_profile_id,
+                                        )));
+                              },
+                              title: Text(
+                                  snapshot.data!.elementAt(index)['plattform']),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               );
             }
