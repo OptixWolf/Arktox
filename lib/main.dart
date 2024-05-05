@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto/crypto.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'database.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'dialog.dart';
@@ -87,6 +88,8 @@ class _HomepageState extends State<Homepage> {
   List<String> contacts = [];
   List<Map<String, dynamic>> items = [];
   List<Map<String, dynamic>> filteredItems = [];
+  int counter = 0;
+  int counter2 = 0;
 
   @override
   void initState() {
@@ -125,46 +128,6 @@ class _HomepageState extends State<Homepage> {
               },
             );
             print(result.first);
-
-            /*DatabaseService()
-                .executeQuery('SELECT profile_id FROM profil')
-                .then((users) {
-              if (users.isNotEmpty) {
-                DatabaseService()
-                    .executeQuery('SELECT * FROM follower')
-                    .then((follower) {
-                  if (follower.isNotEmpty) {
-                    for (var user in users) {
-                      if (user['profile_id'] != own_profile_id.toString()) {
-                        print(user);
-                        String current_user = user['profile_id'];
-                        bool con1 = false;
-                        bool con2 = false;
-                        for (var follow in follower) {
-                          print(follow);
-                          if (follow['from_profile_id'] ==
-                                  own_profile_id.toString() &&
-                              follow['to_profile_id'] == current_user) {
-                            con1 = true;
-                          }
-                          if (follow['from_profile_id'] == current_user &&
-                              follow['to_profile_id'] ==
-                                  own_profile_id.toString()) {
-                            con2 = true;
-                          }
-                          if (con1 && con2) {
-                            if (!contacts.contains(current_user)) {
-                              contacts.add(current_user);
-                            }
-                          }
-                        }
-                      }
-                    }
-                    print(contacts);
-                  }
-                });
-              }
-            });*/
           }
         });
       });
@@ -245,9 +208,32 @@ class _HomepageState extends State<Homepage> {
     throw ();
   }
 
-  Future<List<Map<String, dynamic>>> getMessages() {
-    var result = DatabaseService().executeQuery(
+  Future<List<Map<String, dynamic>>> getMessages() async {
+    var result = await DatabaseService().executeQuery(
         'SELECT * FROM nachrichten WHERE to_profile_id = $own_profile_id');
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getArchivKategorien() async {
+    var result =
+        await DatabaseService().executeQuery('SELECT * FROM kategorien_archiv');
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getArchivEintraege() async {
+    var result =
+        await DatabaseService().executeQuery('SELECT * FROM archiv_eintraege');
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getSkripteKategorien() async {
+    var result = await DatabaseService()
+        .executeQuery('SELECT * FROM kategorien_skripte');
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getSkripteEintraege() async {
+    var result = await DatabaseService().executeQuery('SELECT * FROM skripte');
     return result;
   }
 
@@ -291,9 +277,147 @@ class _HomepageState extends State<Homepage> {
       ),
       body: <Widget>[
         /// Archiv
-        Container(),
+        FutureBuilder(
+            future: getArchivKategorien(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Container();
+              } else if (snapshot.hasData) {
+                return FutureBuilder(
+                    future: getArchivEintraege(),
+                    builder: (context, snapshot2) {
+                      if (snapshot2.connectionState ==
+                          ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      } else if (snapshot2.hasError) {
+                        return Container();
+                      } else if (snapshot2.hasData) {
+                        counter = 0;
+                        List<Map<String, dynamic>> own_items = [];
+                        List<Map<String, dynamic>> verified_items = [];
+
+                        for (var item in snapshot2.data!) {
+                          if (item['profile_id'] == own_profile_id.toString()) {
+                            own_items.add(item);
+                          }
+                        }
+
+                        for (var item in snapshot2.data!) {
+                          if (item['approval_status'] == '1') {
+                            verified_items.add(item);
+                          }
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              const Row(
+                                children: [
+                                  SizedBox(width: 7),
+                                  Text('Archiv',
+                                      style: TextStyle(fontSize: 50)),
+                                ],
+                              ),
+                              const SizedBox(height: 25),
+                              const Row(children: [
+                                SizedBox(width: 7),
+                                Text('Kategorien',
+                                    style: TextStyle(fontSize: 25)),
+                              ]),
+                              const SizedBox(height: 15),
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: snapshot.data!.length,
+                                  itemBuilder: (context, index) {
+                                    return Card(
+                                      child: ListTile(
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      PlattformPage(
+                                                          kategorieid: snapshot
+                                                                  .data!
+                                                                  .elementAt(
+                                                                      index)[
+                                                              'kategorie_id'])));
+                                        },
+                                        title: Text(snapshot.data!
+                                            .elementAt(index)['kategorie']),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              const Row(children: [
+                                SizedBox(width: 7),
+                                Text('Neuesten Archiv Einträge',
+                                    style: TextStyle(fontSize: 25)),
+                              ]),
+                              const SizedBox(height: 15),
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: verified_items.length > 4
+                                      ? 5
+                                      : verified_items.length,
+                                  itemBuilder: (context, index) {
+                                    counter++;
+                                    return Card(
+                                      child: ListTile(
+                                          onTap: () {
+                                            Navigator.of(context).push(MaterialPageRoute(
+                                                builder: (context) => ArchiveItemPage(
+                                                    archiv_itemid: verified_items
+                                                            .elementAt(
+                                                                verified_items
+                                                                        .length -
+                                                                    index -
+                                                                    1)[
+                                                        'archiv_item_id'])));
+                                          },
+                                          title: Text(verified_items.elementAt(
+                                              verified_items.length -
+                                                  counter)['title'])),
+                                    );
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              const Row(children: [
+                                SizedBox(width: 7),
+                                Text('Eigene Archiv Einträge',
+                                    style: TextStyle(fontSize: 25)),
+                              ]),
+                              const SizedBox(height: 15),
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: own_items.length,
+                                  itemBuilder: (context, index) {
+                                    return Card(
+                                      child: ListTile(
+                                          title: Text(own_items
+                                              .elementAt(index)['title'])),
+                                    );
+                                  },
+                                ),
+                              ),
+                              const SizedBox(height: 25),
+                            ],
+                          ),
+                        );
+                      }
+                      throw ();
+                    });
+              }
+              throw ();
+            }),
 
         /// Skripte
+        /// counter 2 und eigene Methoden benutzen
         Container(),
 
         /// Search page
@@ -623,6 +747,350 @@ class _HomepageState extends State<Homepage> {
           ),
         )
       ][currentPageIndex],
+    );
+  }
+}
+
+class PlattformPage extends StatelessWidget {
+  final String kategorieid;
+
+  const PlattformPage({super.key, required this.kategorieid});
+
+  Future<List<Map<String, dynamic>>> getArchivePlatforms() async {
+    var result = await DatabaseService().executeQuery(
+        'SELECT pa.* FROM plattform_archiv pa WHERE pa.plattform_id IN (SELECT ae.plattform_id FROM archiv_eintraege ae WHERE ae.kategorie_id = $kategorieid)');
+    return result;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Plattformen'),
+      ),
+      body: FutureBuilder(
+          future: getArchivePlatforms(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator();
+            } else if (snapshot.hasError) {
+              return Container();
+            } else if (snapshot.hasData) {
+              return Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Expanded(
+                  child: ListView.builder(
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        child: ListTile(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => SelectArchiveItemPage(
+                                      kategorieid: kategorieid,
+                                      plattformid: snapshot.data!
+                                          .elementAt(index)['plattform_id'],
+                                    )));
+                          },
+                          title: Text(
+                              snapshot.data!.elementAt(index)['plattform']),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            }
+            throw ();
+          }),
+    );
+  }
+}
+
+class SelectArchiveItemPage extends StatefulWidget {
+  final String kategorieid;
+  final String plattformid;
+
+  const SelectArchiveItemPage(
+      {super.key, required this.kategorieid, required this.plattformid});
+
+  @override
+  SelectArchiveItemPageState createState() => SelectArchiveItemPageState();
+}
+
+class SelectArchiveItemPageState extends State<SelectArchiveItemPage> {
+  List<Map<String, dynamic>> items = [];
+  List<Map<String, dynamic>> filteredItems = [];
+  String constantFilterString = "[Archiviert]";
+
+  @override
+  void initState() {
+    super.initState();
+    Preferences.getPref('archived').then((archivedValue) {
+      if (!archivedValue) {
+        constantFilterString = "fijeghuioefbuognberonbgoierngioenbrognokenr";
+      }
+      loadItems();
+    });
+  }
+
+  Future<void> loadItems() async {
+    var result = await DatabaseService().executeQuery(
+        'SELECT * FROM archiv_eintraege WHERE kategorie_id = ' +
+            widget.kategorieid +
+            ' AND plattform_id = ' +
+            widget.plattformid +
+            '');
+    setState(() {
+      items = result;
+      items = items
+          .where((item) => !item['title']
+              .toString()
+              .toLowerCase()
+              .contains(constantFilterString.toLowerCase()))
+          .toList();
+      filteredItems = items;
+    });
+  }
+
+  void filterItems(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        filteredItems = items;
+      } else {
+        filteredItems = items
+            .where((item) => item['title']
+                .toString()
+                .toLowerCase()
+                .contains(query.toLowerCase()))
+            .toList();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Archiv Eintrag Auswahl'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          children: [
+            TextField(
+              onChanged: filterItems,
+              decoration: const InputDecoration(
+                labelText: 'Suche',
+                hintText: 'Suche',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: ListView.builder(
+                itemCount: filteredItems.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    child: ListTile(
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => ArchiveItemPage(
+                                  archiv_itemid: filteredItems[index]
+                                      ['archiv_item_id'],
+                                )));
+                      },
+                      title: Text(filteredItems[index]['title']),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ArchiveItemPage extends StatelessWidget {
+  final String archiv_itemid;
+
+  const ArchiveItemPage({super.key, required this.archiv_itemid});
+
+  void setClipboardText(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+  }
+
+  void _showSnackbar(BuildContext context) {
+    final scaffold = ScaffoldMessenger.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+        content: const Text('Inhalt wurde in die Zwischenablage gespeichert'),
+        action: SnackBarAction(
+            label: 'OK', onPressed: scaffold.hideCurrentSnackBar),
+      ),
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getArchiveItem() async {
+    var result = await DatabaseService().executeQuery(
+        'SELECT * FROM archiv_eintraege WHERE archiv_item_id = $archiv_itemid');
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getProfile(String authorid) async {
+    var result = await DatabaseService()
+        .executeQuery('SELECT * FROM profil WHERE profile_id = $authorid');
+    return result;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Archiv Eintrag'),
+      ),
+      body: FutureBuilder(
+          future: getArchiveItem(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator();
+            } else if (snapshot.hasError) {
+              return Container();
+            } else if (snapshot.hasData) {
+              return FutureBuilder(
+                  future: getProfile(snapshot.data!.first['profile_id']),
+                  builder: (context, snapshot2) {
+                    if (snapshot2.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else if (snapshot2.hasError) {
+                      return Container();
+                    } else if (snapshot2.hasData) {
+                      return Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                Visibility(
+                                  visible: snapshot.data!.first['hint'] != null,
+                                  child: Column(
+                                    children: [
+                                      Card(
+                                          surfaceTintColor: Colors.red,
+                                          child: ListTile(
+                                            title: const Text('Hinweis'),
+                                            subtitle: Text(
+                                                snapshot.data!.first['hint'] ??
+                                                    ''),
+                                          )),
+                                      const SizedBox(height: 10),
+                                    ],
+                                  ),
+                                ),
+                                Card(
+                                    child: ListTile(
+                                  title: Text(snapshot.data!.first['title']),
+                                  subtitle:
+                                      Text(snapshot.data!.first['description']),
+                                )),
+                                Visibility(
+                                  visible:
+                                      snapshot.data!.first['command'] != null,
+                                  child: Card(
+                                      child: ListTile(
+                                    title: const Text('Command'),
+                                    subtitle: Text(
+                                        snapshot.data!.first['command'] ?? ''),
+                                    trailing: const Icon(Icons.copy),
+                                    onTap: () {
+                                      setClipboardText(
+                                          snapshot.data!.first['command']);
+                                      _showSnackbar(context);
+                                    },
+                                  )),
+                                ),
+                                Visibility(
+                                  visible: snapshot.data!.first['link'] != null,
+                                  child: Card(
+                                      child: ListTile(
+                                    title: Text(
+                                        snapshot.data!.first['link_title'] ??
+                                            ''),
+                                    subtitle: Text(
+                                        snapshot.data!.first['link'] ?? ''),
+                                    trailing: const Icon(Icons.open_in_new),
+                                    onTap: () {
+                                      _launchURL(
+                                          snapshot.data!.first['link'] ?? '');
+                                    },
+                                  )),
+                                ),
+                                Visibility(
+                                  visible:
+                                      snapshot.data!.first['link2'] != null,
+                                  child: Card(
+                                      child: ListTile(
+                                    title: Text(
+                                        snapshot.data!.first['link2_title'] ??
+                                            ''),
+                                    subtitle: Text(
+                                        snapshot.data!.first['link2'] ?? ''),
+                                    trailing: const Icon(Icons.open_in_new),
+                                    onTap: () {
+                                      _launchURL(
+                                          snapshot.data!.first['link2'] ?? '');
+                                    },
+                                  )),
+                                ),
+                                Visibility(
+                                  visible:
+                                      snapshot.data!.first['link3'] != null,
+                                  child: Card(
+                                      child: ListTile(
+                                    title: Text(
+                                        snapshot.data!.first['link3_title'] ??
+                                            ''),
+                                    subtitle: Text(
+                                        snapshot.data!.first['link3'] ?? ''),
+                                    trailing: const Icon(Icons.open_in_new),
+                                    onTap: () {
+                                      _launchURL(
+                                          snapshot.data!.first['link3'] ?? '');
+                                    },
+                                  )),
+                                ),
+                                const SizedBox(height: 25),
+                                Card(
+                                    child: ListTile(
+                                  title: const Text('Projekt Autor'),
+                                  subtitle: Text(
+                                      snapshot.data!.first['project_author']),
+                                  trailing: const Icon(Icons.open_in_new),
+                                  onTap: () {
+                                    _launchURL(snapshot.data!
+                                            .first['project_author_link'] ??
+                                        '');
+                                  },
+                                )),
+                                Card(
+                                    child: ListTile(
+                                  title: const Text('Bereitgestellt durch'),
+                                  subtitle:
+                                      Text(snapshot2.data!.first['username']),
+                                ))
+                              ],
+                            ),
+                          ));
+                    }
+                    throw ();
+                  });
+            }
+            throw ();
+          }),
     );
   }
 }
@@ -1226,5 +1694,12 @@ class MessagePageState extends State<MessagePage> {
             ],
           ),
         ));
+  }
+}
+
+_launchURL(String url) async {
+  final Uri finalUrl = Uri.parse(url);
+  if (!await launchUrl(finalUrl)) {
+    throw Exception('Could not launch $finalUrl');
   }
 }
