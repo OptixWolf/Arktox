@@ -30,28 +30,28 @@ class _MyDialogState extends State<TextfieldDialog> {
     _controller2.text = widget.own_profilbanner_link;
     _controller3.text = widget.own_about_me;
     return AlertDialog(
-      title: const Text('Neue Profileigenschaften\n(Max. 255 Zeichen)'),
+      title: const Text('Neue Profileigenschaften'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: _controller1,
             decoration: const InputDecoration(
-              hintText: 'Profilbild Link',
+              hintText: 'Profilbild Link (512 Zeichen)',
             ),
           ),
           const SizedBox(height: 10),
           TextField(
             controller: _controller2,
             decoration: const InputDecoration(
-              hintText: 'Profilbanner Link',
+              hintText: 'Profilbanner Link (512 Zeichen)',
             ),
           ),
           const SizedBox(height: 10),
           TextField(
             controller: _controller3,
             decoration: const InputDecoration(
-              hintText: 'About me Text',
+              hintText: 'About me Text (255 Zeichen)',
             ),
           ),
         ],

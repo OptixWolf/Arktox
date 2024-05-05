@@ -330,6 +330,30 @@ class _HomepageState extends State<Homepage> {
                                       style: TextStyle(fontSize: 50)),
                                 ],
                               ),
+                              Visibility(
+                                visible: loggedIn && own_items.isNotEmpty,
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 20),
+                                    Card(
+                                      child: ListTile(
+                                        title: const Text(
+                                            'Eigene Archiv Einträge'),
+                                        trailing: const Icon(Icons.open_in_new),
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      SelectOwnArchiveItemPage(
+                                                          own_profile_id:
+                                                              own_profile_id)));
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 10),
                               const SizedBox(height: 15),
                               const Row(children: [
                                 SizedBox(width: 7),
@@ -406,30 +430,6 @@ class _HomepageState extends State<Homepage> {
                                   },
                                 ),
                               ),
-                              Visibility(
-                                visible: loggedIn && own_items.isNotEmpty,
-                                child: Column(
-                                  children: [
-                                    const SizedBox(height: 20),
-                                    Card(
-                                      child: ListTile(
-                                        title: const Text(
-                                            'Eigene Archiv Einträge'),
-                                        trailing: const Icon(Icons.open_in_new),
-                                        onTap: () {
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      SelectOwnArchiveItemPage(
-                                                          own_profile_id:
-                                                              own_profile_id)));
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 10),
                             ],
                           ),
                         );
@@ -492,6 +492,29 @@ class _HomepageState extends State<Homepage> {
                                       style: TextStyle(fontSize: 50)),
                                 ],
                               ),
+                              Visibility(
+                                visible: loggedIn && own_items.isNotEmpty,
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 20),
+                                    Card(
+                                      child: ListTile(
+                                        title: const Text('Eigene Skripte'),
+                                        trailing: const Icon(Icons.open_in_new),
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      SelectOwnSkriptItemPage(
+                                                          own_profile_id:
+                                                              own_profile_id)));
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 10),
                               const SizedBox(height: 15),
                               const Row(children: [
                                 SizedBox(width: 7),
@@ -567,29 +590,6 @@ class _HomepageState extends State<Homepage> {
                                   },
                                 ),
                               ),
-                              Visibility(
-                                visible: loggedIn && own_items.isNotEmpty,
-                                child: Column(
-                                  children: [
-                                    const SizedBox(height: 20),
-                                    Card(
-                                      child: ListTile(
-                                        title: const Text('Eigene Skripte'),
-                                        trailing: const Icon(Icons.open_in_new),
-                                        onTap: () {
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      SelectOwnSkriptItemPage(
-                                                          own_profile_id:
-                                                              own_profile_id)));
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 10),
                             ],
                           ),
                         );
