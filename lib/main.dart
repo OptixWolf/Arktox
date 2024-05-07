@@ -1520,12 +1520,54 @@ class SelectSkriptItemPageState extends State<SelectSkriptItemPage> {
   }
 }
 
-class ArchiveItemPage extends StatelessWidget {
+class ArchiveItemPage extends StatefulWidget {
   final String archiv_itemid;
   final int own_profile_id;
 
   const ArchiveItemPage(
       {super.key, required this.archiv_itemid, required this.own_profile_id});
+
+  @override
+  ArchiveItemPageState createState() => ArchiveItemPageState();
+}
+
+class ArchiveItemPageState extends State<ArchiveItemPage> {
+  bool liked = false;
+  int own_profileid = -1;
+  String archiv_itemid = '-1';
+  int archiv_like_count = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    own_profileid = widget.own_profile_id;
+    archiv_itemid = widget.archiv_itemid;
+    DatabaseService()
+        .executeQuery(
+            'SELECT like_id FROM likes_archiv WHERE profile_id = $own_profileid AND post_id = $archiv_itemid')
+        .then(
+      (value) {
+        if (value.isNotEmpty && value.first.isNotEmpty) {
+          setState(() {
+            liked = true;
+          });
+        }
+      },
+    );
+
+    DatabaseService()
+        .executeQuery(
+            'SELECT COUNT(like_id) FROM likes_archiv WHERE post_id = $archiv_itemid')
+        .then(
+      (value) {
+        if (value.isNotEmpty && value.first.isNotEmpty) {
+          setState(() {
+            archiv_like_count = int.parse(value.first['COUNT(like_id)']);
+          });
+        }
+      },
+    );
+  }
 
   void setClipboardText(String text) {
     Clipboard.setData(ClipboardData(text: text));
@@ -1552,6 +1594,28 @@ class ArchiveItemPage extends StatelessWidget {
     var result = await DatabaseService()
         .executeQuery('SELECT * FROM profil WHERE profile_id = $authorid');
     return result;
+  }
+
+  void changeLikeStatus() async {
+    var result = await DatabaseService().executeQuery(
+        'SELECT like_id FROM likes_archiv WHERE profile_id = $own_profileid AND post_id = $archiv_itemid');
+
+    if (result.isNotEmpty && result.first.isNotEmpty) {
+      var like_id = result.first['like_id'];
+      DatabaseService()
+          .executeQuery('DELETE FROM likes_archiv WHERE like_id = $like_id');
+      setState(() {
+        liked = false;
+        archiv_like_count = archiv_like_count - 1;
+      });
+    } else {
+      DatabaseService().executeQuery(
+          'INSERT INTO likes_archiv(profile_id, post_id) VALUES($own_profileid, $archiv_itemid)');
+      setState(() {
+        liked = true;
+        archiv_like_count = archiv_like_count + 1;
+      });
+    }
   }
 
   @override
@@ -1604,11 +1668,28 @@ class ArchiveItemPage extends StatelessWidget {
                                   ),
                                 ),
                                 Card(
-                                    child: ListTile(
-                                  title: Text(snapshot.data!.first['title']),
-                                  subtitle:
-                                      Text(snapshot.data!.first['description']),
-                                )),
+                                  child: ListTile(
+                                    title: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Expanded(
+                                            child: Text(
+                                                snapshot.data!.first['title'])),
+                                        IconButton(
+                                            onPressed: () {
+                                              changeLikeStatus();
+                                            },
+                                            icon: liked
+                                                ? const Icon(Icons.favorite)
+                                                : const Icon(
+                                                    Icons.favorite_outline)),
+                                        Text(archiv_like_count.toString()),
+                                      ],
+                                    ),
+                                    subtitle: Text(
+                                        snapshot.data!.first['description']),
+                                  ),
+                                ),
                                 Card(
                                   color:
                                       snapshot.data!.first['approval_status'] ==
@@ -1631,6 +1712,7 @@ class ArchiveItemPage extends StatelessWidget {
                                         : const Icon(Icons.error),
                                   ),
                                 ),
+                                const SizedBox(height: 10),
                                 Visibility(
                                   visible:
                                       snapshot.data!.first['command'] != null,
@@ -1697,7 +1779,7 @@ class ArchiveItemPage extends StatelessWidget {
                                     },
                                   )),
                                 ),
-                                const SizedBox(height: 25),
+                                const SizedBox(height: 20),
                                 Card(
                                     child: ListTile(
                                   title: const Text('Projekt Autor'),
@@ -1724,8 +1806,7 @@ class ArchiveItemPage extends StatelessWidget {
                                     Navigator.of(context)
                                         .push(MaterialPageRoute(
                                             builder: (context) => ProfilePage(
-                                                  own_profile_id:
-                                                      own_profile_id,
+                                                  own_profile_id: own_profileid,
                                                   profile_id: int.parse(
                                                       snapshot2.data!
                                                           .first['profile_id']),
@@ -1745,12 +1826,54 @@ class ArchiveItemPage extends StatelessWidget {
   }
 }
 
-class SkriptItemPage extends StatelessWidget {
+class SkriptItemPage extends StatefulWidget {
   final String skriptid;
   final int own_profile_id;
 
   const SkriptItemPage(
       {super.key, required this.skriptid, required this.own_profile_id});
+
+  @override
+  SkriptItemPageState createState() => SkriptItemPageState();
+}
+
+class SkriptItemPageState extends State<SkriptItemPage> {
+  bool liked = false;
+  int own_profileid = -1;
+  String skriptid = '-1';
+  int skript_like_count = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    own_profileid = widget.own_profile_id;
+    skriptid = widget.skriptid;
+    DatabaseService()
+        .executeQuery(
+            'SELECT like_id FROM likes_skripte WHERE profile_id = $own_profileid AND post_id = $skriptid')
+        .then(
+      (value) {
+        if (value.isNotEmpty && value.first.isNotEmpty) {
+          setState(() {
+            liked = true;
+          });
+        }
+      },
+    );
+
+    DatabaseService()
+        .executeQuery(
+            'SELECT COUNT(like_id) FROM likes_skripte WHERE post_id = $skriptid')
+        .then(
+      (value) {
+        if (value.isNotEmpty && value.first.isNotEmpty) {
+          setState(() {
+            skript_like_count = int.parse(value.first['COUNT(like_id)']);
+          });
+        }
+      },
+    );
+  }
 
   void setClipboardText(String text) {
     Clipboard.setData(ClipboardData(text: text));
@@ -1777,6 +1900,28 @@ class SkriptItemPage extends StatelessWidget {
     var result = await DatabaseService()
         .executeQuery('SELECT * FROM profil WHERE profile_id = $authorid');
     return result;
+  }
+
+  void changeLikeStatus() async {
+    var result = await DatabaseService().executeQuery(
+        'SELECT like_id FROM likes_skripte WHERE profile_id = $own_profileid AND post_id = $skriptid');
+
+    if (result.isNotEmpty && result.first.isNotEmpty) {
+      var like_id = result.first['like_id'];
+      DatabaseService()
+          .executeQuery('DELETE FROM likes_skripte WHERE like_id = $like_id');
+      setState(() {
+        liked = false;
+        skript_like_count = skript_like_count - 1;
+      });
+    } else {
+      DatabaseService().executeQuery(
+          'INSERT INTO likes_skripte(profile_id, post_id) VALUES($own_profileid, $skriptid)');
+      setState(() {
+        liked = true;
+        skript_like_count = skript_like_count + 1;
+      });
+    }
   }
 
   @override
@@ -1814,7 +1959,23 @@ class SkriptItemPage extends StatelessWidget {
                               children: [
                                 Card(
                                     child: ListTile(
-                                  title: Text(snapshot.data!.first['title']),
+                                  title: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Expanded(
+                                          child: Text(
+                                              snapshot.data!.first['title'])),
+                                      IconButton(
+                                          onPressed: () {
+                                            changeLikeStatus();
+                                          },
+                                          icon: liked
+                                              ? const Icon(Icons.favorite)
+                                              : const Icon(
+                                                  Icons.favorite_outline)),
+                                      Text(skript_like_count.toString()),
+                                    ],
+                                  ),
                                   subtitle:
                                       Text(snapshot.data!.first['description']),
                                 )),
@@ -1883,8 +2044,7 @@ class SkriptItemPage extends StatelessWidget {
                                     Navigator.of(context)
                                         .push(MaterialPageRoute(
                                             builder: (context) => ProfilePage(
-                                                  own_profile_id:
-                                                      own_profile_id,
+                                                  own_profile_id: own_profileid,
                                                   profile_id: int.parse(
                                                       snapshot2.data!
                                                           .first['profile_id']),
