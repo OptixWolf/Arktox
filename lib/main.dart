@@ -1677,7 +1677,9 @@ class ArchiveItemPageState extends State<ArchiveItemPage> {
                                                 snapshot.data!.first['title'])),
                                         IconButton(
                                             onPressed: () {
-                                              changeLikeStatus();
+                                              if (own_profileid != -1) {
+                                                changeLikeStatus();
+                                              }
                                             },
                                             icon: liked
                                                 ? const Icon(Icons.favorite)
@@ -1967,7 +1969,9 @@ class SkriptItemPageState extends State<SkriptItemPage> {
                                               snapshot.data!.first['title'])),
                                       IconButton(
                                           onPressed: () {
-                                            changeLikeStatus();
+                                            if (own_profileid != -1) {
+                                              changeLikeStatus();
+                                            }
                                           },
                                           icon: liked
                                               ? const Icon(Icons.favorite)
