@@ -2585,8 +2585,14 @@ class MessagePageState extends State<MessagePage> {
             'SELECT * FROM nachrichten WHERE from_profile_id = $own_profileid AND to_profile_id = $profileid OR from_profile_id = $profileid AND to_profile_id = $own_profileid')
         .then(
       (value) {
-        DatabaseService().executeQuery(
-            'UPDATE nachrichten SET readed = 1 WHERE from_profile_id = $own_profileid AND to_profile_id = $profileid OR from_profile_id = $profileid AND to_profile_id = $own_profileid');
+        for (var item in value) {
+          if (item['from_profile_id'] == profileid.toString() &&
+              item['to_profile_id'] == own_profileid.toString()) {
+            DatabaseService().executeQuery(
+                'UPDATE nachrichten SET readed = 1 WHERE from_profile_id = $profileid AND to_profile_id = $own_profileid');
+          }
+        }
+
         try {
           setState(() {
             messages.clear();
