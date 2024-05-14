@@ -81,6 +81,7 @@ class _HomepageState extends State<Homepage> {
   int currentPageIndex = 0;
 
   bool selectedArchivedValue = true;
+  bool selectedUncheckedValue = true;
   bool selectedDarkmodeValue = true;
   String email = '';
   String passwordHash = '';
@@ -104,6 +105,11 @@ class _HomepageState extends State<Homepage> {
     Preferences.getPref('darkmode').then((darkmodeValue) {
       setState(() {
         selectedDarkmodeValue = darkmodeValue;
+      });
+    });
+    Preferences.getPref('unchecked').then((uncheckedValue) {
+      setState(() {
+        selectedUncheckedValue = uncheckedValue;
       });
     });
     Preferences.getPrefString('email').then((emailValue) {
@@ -146,6 +152,13 @@ class _HomepageState extends State<Homepage> {
     setState(() {
       selectedArchivedValue = !selectedArchivedValue;
       Preferences.setPref('archived', selectedArchivedValue);
+    });
+  }
+
+  void toggleSwitchUnchecked() {
+    setState(() {
+      selectedUncheckedValue = !selectedUncheckedValue;
+      Preferences.setPref('unchecked', selectedUncheckedValue);
     });
   }
 
@@ -316,6 +329,8 @@ class _HomepageState extends State<Homepage> {
                         for (var item in snapshot2.data!) {
                           if (item['approval_status'] == '1') {
                             verified_items.add(item);
+                          } else if (!selectedUncheckedValue) {
+                            verified_items.add(item);
                           }
                         }
 
@@ -382,6 +397,8 @@ class _HomepageState extends State<Homepage> {
                                                             'kategorie_id'],
                                                         own_profile_id:
                                                             own_profile_id,
+                                                        uncheckedSetting:
+                                                            selectedUncheckedValue,
                                                       )));
                                         },
                                         title: Text(snapshot.data!
@@ -426,7 +443,19 @@ class _HomepageState extends State<Homepage> {
                                           },
                                           title: Text(verified_items.elementAt(
                                               verified_items.length -
-                                                  counter)['title'])),
+                                                  counter)['title']),
+                                          trailing: Visibility(
+                                            visible: !selectedUncheckedValue,
+                                            child: verified_items.elementAt(
+                                                            verified_items
+                                                                    .length -
+                                                                index -
+                                                                1)[
+                                                        'approval_status'] ==
+                                                    '1'
+                                                ? const Icon(Icons.check)
+                                                : const Icon(Icons.error),
+                                          )),
                                     );
                                   },
                                 ),
@@ -477,6 +506,8 @@ class _HomepageState extends State<Homepage> {
 
                         for (var item in snapshot2.data!) {
                           if (item['approval_status'] == '1') {
+                            verified_items.add(item);
+                          } else if (!selectedUncheckedValue) {
                             verified_items.add(item);
                           }
                         }
@@ -543,6 +574,8 @@ class _HomepageState extends State<Homepage> {
                                                             'kategorie_id'],
                                                         own_profile_id:
                                                             own_profile_id,
+                                                        uncheckedSetting:
+                                                            selectedUncheckedValue,
                                                       )));
                                         },
                                         title: Text(snapshot.data!
@@ -586,7 +619,19 @@ class _HomepageState extends State<Homepage> {
                                           },
                                           title: Text(verified_items.elementAt(
                                               verified_items.length -
-                                                  counter2)['title'])),
+                                                  counter2)['title']),
+                                          trailing: Visibility(
+                                            visible: !selectedUncheckedValue,
+                                            child: verified_items.elementAt(
+                                                            verified_items
+                                                                    .length -
+                                                                index -
+                                                                1)[
+                                                        'approval_status'] ==
+                                                    '1'
+                                                ? const Icon(Icons.check)
+                                                : const Icon(Icons.error),
+                                          )),
                                     );
                                   },
                                 ),
@@ -921,7 +966,7 @@ class _HomepageState extends State<Homepage> {
                 )),
                 Card(
                     child: ListTile(
-                  title: const Text('Verstecke Archivierte Einträge'),
+                  title: const Text('Verstecke archivierte Einträge'),
                   subtitle: const Text(
                       'Wenn deaktiviert, siehst du Archivierte Einträge'),
                   trailing: Switch(
@@ -932,6 +977,21 @@ class _HomepageState extends State<Homepage> {
                   ),
                   onTap: () {
                     toggleSwitchArchived();
+                  },
+                )),
+                Card(
+                    child: ListTile(
+                  title: const Text('Verstecke unbestätigte Einträge'),
+                  subtitle: const Text(
+                      'Wenn deaktiviert, siehst du unbestätigte Einträge'),
+                  trailing: Switch(
+                    value: selectedUncheckedValue,
+                    onChanged: (value) {
+                      toggleSwitchUnchecked();
+                    },
+                  ),
+                  onTap: () {
+                    toggleSwitchUnchecked();
                   },
                 ))
               ],
@@ -946,9 +1006,13 @@ class _HomepageState extends State<Homepage> {
 class PlattformPage extends StatelessWidget {
   final String kategorieid;
   final int own_profile_id;
+  final bool uncheckedSetting;
 
   const PlattformPage(
-      {super.key, required this.kategorieid, required this.own_profile_id});
+      {super.key,
+      required this.kategorieid,
+      required this.own_profile_id,
+      required this.uncheckedSetting});
 
   Future<List<Map<String, dynamic>>> getArchivePlatforms() async {
     var result = await DatabaseService().executeQuery(
@@ -990,6 +1054,7 @@ class PlattformPage extends StatelessWidget {
                                           plattformid: snapshot.data!
                                               .elementAt(index)['plattform_id'],
                                           own_profile_id: own_profile_id,
+                                          uncheckedSetting: uncheckedSetting,
                                         )));
                               },
                               title: Text(
@@ -1012,9 +1077,13 @@ class PlattformPage extends StatelessWidget {
 class SkriptePlattformPage extends StatelessWidget {
   final String kategorieid;
   final int own_profile_id;
+  final bool uncheckedSetting;
 
   const SkriptePlattformPage(
-      {super.key, required this.kategorieid, required this.own_profile_id});
+      {super.key,
+      required this.kategorieid,
+      required this.own_profile_id,
+      required this.uncheckedSetting});
 
   Future<List<Map<String, dynamic>>> getArchivePlatforms() async {
     var result = await DatabaseService().executeQuery(
@@ -1056,6 +1125,7 @@ class SkriptePlattformPage extends StatelessWidget {
                                           plattformid: snapshot.data!
                                               .elementAt(index)['plattform_id'],
                                           own_profile_id: own_profile_id,
+                                          uncheckedSetting: uncheckedSetting,
                                         )));
                               },
                               title: Text(
@@ -1079,12 +1149,14 @@ class SelectArchiveItemPage extends StatefulWidget {
   final String kategorieid;
   final String plattformid;
   final int own_profile_id;
+  final bool uncheckedSetting;
 
   const SelectArchiveItemPage(
       {super.key,
       required this.kategorieid,
       required this.plattformid,
-      required this.own_profile_id});
+      required this.own_profile_id,
+      required this.uncheckedSetting});
 
   @override
   SelectArchiveItemPageState createState() => SelectArchiveItemPageState();
@@ -1107,22 +1179,41 @@ class SelectArchiveItemPageState extends State<SelectArchiveItemPage> {
   }
 
   Future<void> loadItems() async {
-    var result = await DatabaseService().executeQuery(
-        'SELECT * FROM archiv_eintraege WHERE kategorie_id = ' +
-            widget.kategorieid +
-            ' AND plattform_id = ' +
-            widget.plattformid +
-            '');
-    setState(() {
-      items = result;
-      items = items
-          .where((item) => !item['title']
-              .toString()
-              .toLowerCase()
-              .contains(constantFilterString.toLowerCase()))
-          .toList();
-      filteredItems = items;
-    });
+    if (!widget.uncheckedSetting) {
+      var result = await DatabaseService().executeQuery(
+          'SELECT * FROM archiv_eintraege WHERE kategorie_id = ' +
+              widget.kategorieid +
+              ' AND plattform_id = ' +
+              widget.plattformid +
+              '');
+      setState(() {
+        items = result;
+        items = items
+            .where((item) => !item['title']
+                .toString()
+                .toLowerCase()
+                .contains(constantFilterString.toLowerCase()))
+            .toList();
+        filteredItems = items;
+      });
+    } else {
+      var result = await DatabaseService().executeQuery(
+          'SELECT * FROM archiv_eintraege WHERE kategorie_id = ' +
+              widget.kategorieid +
+              ' AND plattform_id = ' +
+              widget.plattformid +
+              ' AND approval_status = 1');
+      setState(() {
+        items = result;
+        items = items
+            .where((item) => !item['title']
+                .toString()
+                .toLowerCase()
+                .contains(constantFilterString.toLowerCase()))
+            .toList();
+        filteredItems = items;
+      });
+    }
   }
 
   void filterItems(String query) {
@@ -1177,6 +1268,12 @@ class SelectArchiveItemPageState extends State<SelectArchiveItemPage> {
                                 )));
                       },
                       title: Text(filteredItems[index]['title']),
+                      trailing: Visibility(
+                        visible: !widget.uncheckedSetting,
+                        child: filteredItems[index]['approval_status'] == '1'
+                            ? const Icon(Icons.check)
+                            : const Icon(Icons.error),
+                      ),
                     ),
                   );
                 },
@@ -1411,12 +1508,14 @@ class SelectSkriptItemPage extends StatefulWidget {
   final String kategorieid;
   final String plattformid;
   final int own_profile_id;
+  final bool uncheckedSetting;
 
   const SelectSkriptItemPage(
       {super.key,
       required this.kategorieid,
       required this.plattformid,
-      required this.own_profile_id});
+      required this.own_profile_id,
+      required this.uncheckedSetting});
 
   @override
   SelectSkriptItemPageState createState() => SelectSkriptItemPageState();
@@ -1439,22 +1538,41 @@ class SelectSkriptItemPageState extends State<SelectSkriptItemPage> {
   }
 
   Future<void> loadItems() async {
-    var result = await DatabaseService().executeQuery(
-        'SELECT * FROM skripte WHERE kategorie_id = ' +
-            widget.kategorieid +
-            ' AND plattform_id = ' +
-            widget.plattformid +
-            '');
-    setState(() {
-      items = result;
-      items = items
-          .where((item) => !item['title']
-              .toString()
-              .toLowerCase()
-              .contains(constantFilterString.toLowerCase()))
-          .toList();
-      filteredItems = items;
-    });
+    if (!widget.uncheckedSetting) {
+      var result = await DatabaseService().executeQuery(
+          'SELECT * FROM skripte WHERE kategorie_id = ' +
+              widget.kategorieid +
+              ' AND plattform_id = ' +
+              widget.plattformid +
+              '');
+      setState(() {
+        items = result;
+        items = items
+            .where((item) => !item['title']
+                .toString()
+                .toLowerCase()
+                .contains(constantFilterString.toLowerCase()))
+            .toList();
+        filteredItems = items;
+      });
+    } else {
+      var result = await DatabaseService().executeQuery(
+          'SELECT * FROM skripte WHERE kategorie_id = ' +
+              widget.kategorieid +
+              ' AND plattform_id = ' +
+              widget.plattformid +
+              ' AND approval_status = 1');
+      setState(() {
+        items = result;
+        items = items
+            .where((item) => !item['title']
+                .toString()
+                .toLowerCase()
+                .contains(constantFilterString.toLowerCase()))
+            .toList();
+        filteredItems = items;
+      });
+    }
   }
 
   void filterItems(String query) {
@@ -1508,6 +1626,12 @@ class SelectSkriptItemPageState extends State<SelectSkriptItemPage> {
                                 )));
                       },
                       title: Text(filteredItems[index]['title']),
+                      trailing: Visibility(
+                        visible: !widget.uncheckedSetting,
+                        child: filteredItems[index]['approval_status'] == '1'
+                            ? const Icon(Icons.check)
+                            : const Icon(Icons.error),
+                      ),
                     ),
                   );
                 },
