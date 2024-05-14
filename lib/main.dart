@@ -1828,9 +1828,9 @@ class ArchiveItemPageState extends State<ArchiveItemPage> {
                                                 .first['approval_status'] ==
                                             '1'
                                         ? const Text(
-                                            'Das Skript wurde von einem Moderator bestätigt')
+                                            'Der Eintrag wurde von einem Moderator bestätigt')
                                         : const Text(
-                                            'Das Skript wurde noch nicht überprüft'),
+                                            'Der Eintrag wurde noch nicht überprüft'),
                                     trailing: snapshot.data!
                                                 .first['approval_status'] ==
                                             '1'
