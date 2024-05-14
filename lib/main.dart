@@ -2339,7 +2339,7 @@ class ProfilePageState extends State<ProfilePage> {
                         margin: EdgeInsets.zero,
                         child: ListTile(
                           title: const Text('Über mich:'),
-                          subtitle: Text(snapshot.data?.first['about_me'],
+                          subtitle: Text(snapshot.data?.first['about_me'] ?? '',
                               style: const TextStyle(fontSize: 14)),
                         ),
                       ),
