@@ -1,5 +1,7 @@
 # Arktox
 
+[![version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/OptixWolf/Arktox/releases/latest)
+[![](https://img.shields.io/github/downloads/OptixWolf/Arktox/total)](https://github.com/OptixWolf/Arktox/releases/latest)
 [![](https://img.shields.io/discord/1107109693165416588?logo=discord)](https://discord.com/invite/KW7GWQfKaj)
 
 > [!WARNING]
