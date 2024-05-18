@@ -4,12 +4,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crypto/crypto.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'database.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
+import 'package:http/http.dart' as http;
 import 'dialog.dart';
 import 'package:intl/intl.dart';
 import 'dart:io';
@@ -31,7 +33,7 @@ class ArktoxApp extends StatelessWidget {
 
         return MaterialApp(
           title: 'Arktox',
-          home: const Homepage(),
+          home: const VersionControl(),
           themeMode:
               currentThemeMode == true ? ThemeMode.dark : ThemeMode.light,
           theme: ThemeData.light(
@@ -67,6 +69,122 @@ class Preferences {
   static Future<void> setPrefString(String key, String value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString(key, value);
+  }
+}
+
+class VersionControl extends StatelessWidget {
+  const VersionControl({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    Future<String> getPackageInfo() async {
+      PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      return packageInfo.version;
+    }
+
+    Future<List<Map<String, dynamic>>> getLatestReleaseVersion() async {
+      var latestVersion =
+          await DatabaseService().executeQuery('SELECT * FROM version_history');
+
+      if (latestVersion.isNotEmpty) {
+        return latestVersion;
+      } else {
+        List<Map<String, dynamic>> keineVersion = [
+          {
+            "version": "-1",
+          }
+        ];
+
+        return keineVersion;
+      }
+    }
+
+    return Scaffold(
+      body: FutureBuilder(
+          future: getLatestReleaseVersion(),
+          builder: (context, snapshot) {
+            return FutureBuilder(
+                future: getPackageInfo(),
+                builder: (context, snapshot2) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return LoadingAnimationWidget.threeArchedCircle(
+                        color: Colors.blueGrey, size: 75);
+                  } else if (snapshot.hasError) {
+                    return Container();
+                  } else if (snapshot.hasData) {
+                    final lV = snapshot2.data;
+                    final nV = snapshot.data?.last['version'];
+
+                    final cL = snapshot.data!.reversed.toList();
+
+                    if (nV != "-1" && lV != nV) {
+                      return Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Card(
+                              child: ListTile(
+                                title: Text(
+                                    'Veraltete Version erkannt ($lV -> $nV)'),
+                                subtitle: const Text(
+                                    'Bitte hol dir die neueste Version von Arktox'),
+                              ),
+                            ),
+                            Expanded(
+                              child: Card(
+                                child: ListTile(
+                                  title: const Text('Changelog\n'),
+                                  subtitle: Builder(builder: (context) {
+                                    return ListView.builder(
+                                      itemCount: cL.length,
+                                      itemBuilder: (context, index) {
+                                        return Text('Changelog für ' +
+                                            cL.elementAt(index)['version'] +
+                                            ':\n' +
+                                            cL.elementAt(index)['changelog'] +
+                                            '\n');
+                                      },
+                                    );
+                                  }),
+                                ),
+                              ),
+                            ),
+                            Card(
+                              surfaceTintColor: Colors.green,
+                              child: ListTile(
+                                title: const Text('Neues Update herunterladen'),
+                                subtitle: const Text(
+                                    'Es wird empfohlen die neueste Version zu nutzen, es könnte sonst zu Fehlern und einer schlechteren Nutzererfahrung kommen'),
+                                trailing: const Icon(Icons.open_in_new),
+                                onTap: () {
+                                  _launchURL(
+                                      'https://github.com/OptixWolf/Arktox/releases/latest');
+                                },
+                              ),
+                            ),
+                            Card(
+                              surfaceTintColor: Colors.red,
+                              child: ListTile(
+                                title: const Text('Trotzdem fortfahren'),
+                                trailing: const Icon(Icons.open_in_new),
+                                onTap: () {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => const Homepage()));
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      return const Homepage();
+                    }
+                  }
+                  return const Homepage();
+                });
+          }),
+    );
   }
 }
 
