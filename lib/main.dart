@@ -1778,6 +1778,7 @@ class ArchiveItemPageState extends State<ArchiveItemPage> {
   int own_profileid = -1;
   String archiv_itemid = '-1';
   int archiv_like_count = 0;
+  String creation_date = '';
 
   @override
   void initState() {
@@ -1877,6 +1878,14 @@ class ArchiveItemPageState extends State<ArchiveItemPage> {
             } else if (snapshot.hasError) {
               return Container();
             } else if (snapshot.hasData) {
+              creation_date = snapshot.data!.first['created_at'].toString();
+
+              DateFormat originalFormat = DateFormat('yyyy-MM-dd');
+              DateFormat newFormat = DateFormat('dd.MM.yyyy');
+
+              creation_date =
+                  newFormat.format(originalFormat.parse(creation_date));
+
               return FutureBuilder(
                   future: getProfile(snapshot.data!.first['profile_id']),
                   builder: (context, snapshot2) {
@@ -2042,9 +2051,10 @@ class ArchiveItemPageState extends State<ArchiveItemPage> {
                                       backgroundImage: NetworkImage(snapshot2
                                               .data!.first['profilbild_link'] ??
                                           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmHkj6-Tndku8K2387sMaBf2DaiwfBtHQw951-fc9zzA&s')),
-                                  title: const Text('Bereitgestellt durch'),
+                                  title: Text('Von ' +
+                                      snapshot2.data!.first['username']),
                                   subtitle:
-                                      Text(snapshot2.data!.first['username']),
+                                      Text('Erstellt am ' + creation_date),
                                   trailing: const Icon(Icons.person),
                                   onTap: () {
                                     Navigator.of(context)
@@ -2086,6 +2096,7 @@ class SkriptItemPageState extends State<SkriptItemPage> {
   int own_profileid = -1;
   String skriptid = '-1';
   int skript_like_count = 0;
+  String creation_date = '';
 
   @override
   void initState() {
@@ -2185,6 +2196,14 @@ class SkriptItemPageState extends State<SkriptItemPage> {
             } else if (snapshot.hasError) {
               return Container();
             } else if (snapshot.hasData) {
+              creation_date = snapshot.data!.first['created_at'].toString();
+
+              DateFormat originalFormat = DateFormat('yyyy-MM-dd');
+              DateFormat newFormat = DateFormat('dd.MM.yyyy');
+
+              creation_date =
+                  newFormat.format(originalFormat.parse(creation_date));
+
               return FutureBuilder(
                   future: getProfile(snapshot.data!.first['profile_id']),
                   builder: (context, snapshot2) {
@@ -2282,9 +2301,10 @@ class SkriptItemPageState extends State<SkriptItemPage> {
                                       backgroundImage: NetworkImage(snapshot2
                                               .data!.first['profilbild_link'] ??
                                           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTmHkj6-Tndku8K2387sMaBf2DaiwfBtHQw951-fc9zzA&s')),
-                                  title: const Text('Bereitgestellt durch'),
+                                  title: Text('Von ' +
+                                      snapshot2.data!.first['username']),
                                   subtitle:
-                                      Text(snapshot2.data!.first['username']),
+                                      Text('Erstellt am ' + creation_date),
                                   trailing: const Icon(Icons.person),
                                   onTap: () {
                                     Navigator.of(context)
