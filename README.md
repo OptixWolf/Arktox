@@ -19,7 +19,7 @@ Außerdem bietet die Anwendung Skripte und Chats mit anderen Nutzern.
 
 Schritt 1: Lade das Projekt [hier](https://github.com/OptixWolf/Arktox/archive/refs/heads/main.zip) herunter  
 Schritt 2: Erstelle eine MySQL Datenbank  
-Schritt 3: Um die Datenbank zu erstellen führe die Skripte `arktox_creating_script.sql`, `arktox_inserting_script.sql` und `arktox_insert_otherthings_script.sql` in dieser reihenfolge aus  
+Schritt 3: Um die Datenbank zu erstellen führe die Skripte `arktox_creating_script.sql`, `arktox_inserting_script.sql` und `arktox_insert_otherthings_script.sql` im scripts Ordner in dieser reihenfolge aus  
 Schritt 4: Erstelle die Datei keys.dart im lib Ordner  
 Schritt 5: Füge den folgenden Code in die Datei keys.dart ein und ersetze die Werte mit deinen eigenen
 ```dart
@@ -44,7 +44,7 @@ Furthermore, the application offers scripts and chats with other users
 
 Step 1: Download the project [here](https://github.com/OptixWolf/Arktox/archive/refs/heads/main.zip)  
 Step 2: Create a MySQL database  
-Step 3: To create the database execute the scripts `arktox_creating_script.sql`, `arktox_inserting_script.sql` and `arktox_insert_otherthings_script.sql` in this order  
+Step 3: To create the database execute the scripts `arktox_creating_script.sql`, `arktox_inserting_script.sql` and `arktox_insert_otherthings_script.sql` in the scripts folder in this order  
 Step 4: Create the file keys.dart in the lib folder  
 Step 5: Paste the following code into the keys.dart file and replace the values with your own
 ```dart
