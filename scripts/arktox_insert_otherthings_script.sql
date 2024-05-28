@@ -7,7 +7,8 @@ DROP VIEW IF EXISTS view_unbestaetigte_skript_eintraege;
 DROP VIEW IF EXISTS  view_archiv_eintraege_approval_status;
 DROP VIEW IF EXISTS view_skripte_approval_status;
 DROP TRIGGER IF EXISTS before_update_profilbanner;
-DROP USER IF EXISTS 'moderator'@'localhost';
+DROP ROLE IF EXISTS 'moderator';
+DROP USER IF EXISTS 'testuser'@'localhost';
 
 CREATE VIEW view_bestaetigte_archiv_eintraege AS
 SELECT * from archiv_eintraege
@@ -69,9 +70,12 @@ END //
 
 DELIMITER ;
 
-CREATE USER 'moderator'@'localhost' IDENTIFIED BY 'moderatorarktox2024';
+CREATE ROLE 'moderator';
+CREATE USER 'testuser'@'localhost' IDENTIFIED BY 'moderatorarktox2024';
 
-GRANT UPDATE, SELECT ON arktox.view_archiv_eintraege_approval_status TO 'moderator'@'localhost';
-GRANT UPDATE, SELECT ON arktox.view_skripte_approval_status TO 'moderator'@'localhost';
+GRANT UPDATE, SELECT ON arktox.view_archiv_eintraege_approval_status TO 'moderator';
+GRANT UPDATE, SELECT ON arktox.view_skripte_approval_status TO 'moderator';
+
+GRANT 'moderator' TO 'testuser'@'localhost';
 
 FLUSH PRIVILEGES;
