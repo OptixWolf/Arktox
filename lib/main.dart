@@ -1014,9 +1014,34 @@ class _HomepageState extends State<Homepage> {
                     icon: const Icon(Icons.arrow_right),
                     onPressed: () {
                       if (loggedIn) {
-                        Preferences.setPrefString('email', '');
-                        Preferences.setPrefString('passwordHash', '');
-                        Phoenix.rebirth(context);
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Bestätige'),
+                              content: const Text(
+                                  'Möchtest du dich wirklich abmelden?'),
+                              actions: <Widget>[
+                                TextButton(
+                                  child: const Text('Ja'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    Preferences.setPrefString('email', '');
+                                    Preferences.setPrefString(
+                                        'passwordHash', '');
+                                    Phoenix.rebirth(context);
+                                  },
+                                ),
+                                TextButton(
+                                  child: const Text('Nein'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        );
                       } else {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => LoginPage()));
@@ -1025,9 +1050,33 @@ class _HomepageState extends State<Homepage> {
                   ),
                   onTap: () {
                     if (loggedIn) {
-                      Preferences.setPrefString('email', '');
-                      Preferences.setPrefString('passwordHash', '');
-                      Phoenix.rebirth(context);
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Bestätige'),
+                            content: const Text(
+                                'Möchtest du dich wirklich abmelden?'),
+                            actions: <Widget>[
+                              TextButton(
+                                child: const Text('Ja'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  Preferences.setPrefString('email', '');
+                                  Preferences.setPrefString('passwordHash', '');
+                                  Phoenix.rebirth(context);
+                                },
+                              ),
+                              TextButton(
+                                child: const Text('Nein'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     } else {
                       Navigator.of(context).push(
                           MaterialPageRoute(builder: (context) => LoginPage()));
