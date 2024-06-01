@@ -27,7 +27,7 @@ const host = 'youripadress';
 const port = yourport;
 const user = 'youruser';
 const password = 'yourpassword';
-const databaseName = 'yourdbname';
+const databaseName = 'arktox';
 ```
 Schritt 6: Führe `flutter pub get` aus  
 Schritt 7: Erstelle das Projekt (nicht Web auswählen)
@@ -52,7 +52,7 @@ const host = 'youripadress';
 const port = yourport;
 const user = 'youruser';
 const password = 'yourpassword';
-const databaseName = 'yourdbname';
+const databaseName = 'arktox';
 ```
 Step 6: Execute `flutter pub get`  
 Step 7: Create the project (do not select web)
