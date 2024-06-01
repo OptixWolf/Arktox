@@ -116,5 +116,5 @@ INSERT INTO skripte(profile_id, approval_status, title, description, script, kat
 (1, 1, 'Archlinux Discord Canary Vencord Update', 'Ein Skript zum aktualisieren von Discord Canary + Vencord', '', 1, 1, '2024-05-01');
 
 INSERT INTO version_history(version, changelog) VALUES
-('0.1.0', 'Erste veröffentlichung\nKein Changelog verfügbar'),
-('0.0.1', 'Test');
+('0.0.1', 'Test'),
+('0.1.0', 'Erste veröffentlichung\nKein Changelog verfügbar');
