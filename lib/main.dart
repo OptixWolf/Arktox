@@ -339,7 +339,7 @@ class _HomepageState extends State<Homepage> {
         return contacts;
       }
     }
-    throw ();
+    return Future.value([]);
   }
 
   Future<List<Map<String, dynamic>>> getMessages() async {
