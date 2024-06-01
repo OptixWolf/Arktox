@@ -4,10 +4,15 @@ DROP VIEW IF EXISTS view_bestaetigte_archiv_eintraege;
 DROP VIEW IF EXISTS view_bestaetigte_skript_eintraege;
 DROP VIEW IF EXISTS view_unbestaetigte_archiv_eintraege;
 DROP VIEW IF EXISTS view_unbestaetigte_skript_eintraege;
-DROP VIEW IF EXISTS  view_archiv_eintraege_approval_status;
+DROP VIEW IF EXISTS view_archiv_eintraege_approval_status;
 DROP VIEW IF EXISTS view_skripte_approval_status;
+DROP VIEW IF EXISTS view_archiv_kommentare_comment;
+DROP VIEW IF EXISTS view_skripte_kommentare_comment;
+DROP VIEW IF EXISTS view_nutzerdaten_reset_password;
+DROP VIEW IF EXISTS view_profil_edit;
 DROP TRIGGER IF EXISTS before_update_profil;
 DROP ROLE IF EXISTS 'moderator';
+DROP ROLE IF EXISTS 'administrator';
 DROP USER IF EXISTS 'testuser'@'localhost';
 
 CREATE VIEW view_bestaetigte_archiv_eintraege AS
@@ -33,6 +38,22 @@ FROM archiv_eintraege;
 CREATE VIEW view_skripte_approval_status AS
 SELECT skript_id, approval_status
 FROM skripte;
+
+CREATE VIEW view_archiv_kommentare_comment AS
+SELECT comment_id, comment
+FROM kommentare_archiv;
+
+CREATE VIEW view_skripte_kommentare_comment AS
+SELECT comment_id, comment
+FROM kommentare_skripte;
+
+CREATE VIEW view_nutzerdaten_reset_password AS
+SELECT user_id, password_hash
+FROM nutzerdaten;
+
+CREATE VIEW view_profil_edit AS
+SELECT profile_id, username, profilbild_link, profilbanner_link, about_me
+FROM profil;
 
 DELIMITER //
 
@@ -97,10 +118,20 @@ END //
 DELIMITER ;
 
 CREATE ROLE 'moderator';
+CREATE ROLE 'administrator';
 CREATE USER 'testuser'@'localhost' IDENTIFIED BY 'moderatorarktox2024';
 
 GRANT UPDATE, SELECT ON arktox.view_archiv_eintraege_approval_status TO 'moderator';
 GRANT UPDATE, SELECT ON arktox.view_skripte_approval_status TO 'moderator';
+GRANT ALL ON arktox.view_archiv_kommentare_comment TO 'moderator';
+GRANT ALL ON arktox.view_skripte_kommentare_comment TO 'moderator';
+
+GRANT 'moderator' TO 'administrator';
+GRANT ALL ON kategorien_archiv TO 'administrator';
+GRANT ALL ON kategorien_skripte TO 'administrator';
+GRANT UPDATE, SELECT ON arktox.view_nutzerdaten_reset_password TO 'administrator';
+GRANT UPDATE, SELECT ON arktox.view_profil_edit TO 'administrator';
+GRANT ALL ON version_history TO 'administrator';
 
 GRANT 'moderator' TO 'testuser'@'localhost';
 
