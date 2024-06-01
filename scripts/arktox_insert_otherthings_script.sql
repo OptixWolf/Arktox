@@ -13,6 +13,7 @@ DROP VIEW IF EXISTS view_profil_edit;
 DROP TRIGGER IF EXISTS before_update_profil;
 DROP TRIGGER IF EXISTS before_insert_archiv_eintrag;
 DROP TRIGGER IF EXiSTS before_insert_skripte;
+DROP PROCEDURE IF EXISTS proc_new_profile;
 DROP ROLE IF EXISTS 'moderator';
 DROP ROLE IF EXISTS 'administrator';
 DROP USER IF EXISTS 'testmoderator'@'%';
@@ -25,14 +26,6 @@ WHERE approval_status = '1';
 CREATE VIEW view_bestaetigte_skript_eintraege AS
 SELECT * from skripte
 WHERE approval_status = '1';
-
-CREATE VIEW view_unbestaetigte_archiv_eintraege AS
-SELECT * from archiv_eintraege
-WHERE approval_status = '0';
-
-CREATE VIEW view_unbestaetigte_skript_eintraege AS
-SELECT * from skripte
-WHERE approval_status = '0';
 
 CREATE VIEW view_archiv_eintraege_approval_status AS
 SELECT archiv_item_id, approval_status
@@ -130,6 +123,20 @@ BEFORE INSERT ON skripte
 FOR EACH ROW
 BEGIN
     SET NEW.approval_status = 0;
+END //
+
+CREATE PROCEDURE proc_new_profile(IN user_id INT, IN first_name VARCHAR(255), IN last_name VARCHAR(255), IN username VARCHAR(255))
+BEGIN
+    DECLARE profileNr INT;
+
+    IF EXISTS (SELECT * FROM profil p WHERE p.username = username) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Benutzername ist vergeben';
+    END IF;
+
+    SET profileNr = (SELECT MAX(profile_id) FROM profil) + 1;
+    
+    INSERT INTO profil(profile_id, user_id, first_name, last_name, username) VALUES(profileNr, user_id, first_name, last_name, username);
+
 END //
 
 DELIMITER ;
