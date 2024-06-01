@@ -4,9 +4,6 @@
 [![](https://img.shields.io/github/downloads/OptixWolf/Arktox/total)](https://github.com/OptixWolf/Arktox/releases/latest)
 [![](https://img.shields.io/discord/1107109693165416588?logo=discord)](https://discord.com/invite/KW7GWQfKaj)
 
-> [!WARNING]
-> Das Projekt befindet sich noch in der Entwicklungsphase
-
 ## Deutsch
 Arktox ist eine Flutter-Anwendung, die Daten aus einer MySQL-Datenbank liest und ausgibt.
 In diesem Fall enthält die Datenbank Daten über andere großartige Projekte, die entdeckt werden können.
@@ -14,7 +11,7 @@ Außerdem bietet die Anwendung Skripte und Chats mit anderen Nutzern.
 
 ### So richtest du Arktox mit deiner eigenen Datenbank ein
 
-> [!WARNING]
+> [!IMPORTANT]
 > Um das Projekt auszuführen, musst du [Flutter](https://docs.flutter.dev/get-started/install) installiert haben
 
 Schritt 1: Lade das Projekt [hier](https://github.com/OptixWolf/Arktox/archive/refs/heads/main.zip) herunter  
@@ -42,7 +39,7 @@ Furthermore, the application offers scripts and chats with other users
 
 ### How to set up Arktox with your own database
 
-> [!WARNING]
+> [!IMPORTANT]
 > To run the project, you must have [Flutter](https://docs.flutter.dev/get-started/install) installed
 
 Step 1: Download the project [here](https://github.com/OptixWolf/Arktox/archive/refs/heads/main.zip)  
