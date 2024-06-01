@@ -33,7 +33,7 @@ Schritt 6: Führe `flutter pub get` aus
 Schritt 7: Erstelle das Projekt (nicht Web auswählen)
 
 Allgemeine Informationen:
-- Das Passwort wird als SHA256 Hash angegeben
+- Das Passwort der Benutzer der App in der Datenbank wird als SHA256-Hash angegeben
 
 ## English
 Arktox is a Flutter application that reads and outputs data from a MySQL database.
@@ -61,4 +61,4 @@ Step 6: Execute `flutter pub get`
 Step 7: Create the project (do not select web)
 
 General information:
-- The password is specified as SHA256 hash
+- The password of the users of the app in the database is specified as SHA256 hash
