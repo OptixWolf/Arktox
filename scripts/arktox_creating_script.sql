@@ -98,7 +98,7 @@ CREATE TABLE nachrichten(
     FOREIGN KEY(to_profile_id) REFERENCES profil(profile_id)
 );
 
-CREATE TABLE kommentare(
+CREATE TABLE kommentare_skripte(
 	comment_id INT auto_increment,
     post_id INT,
     profile_id INT,
@@ -144,6 +144,18 @@ CREATE TABLE archiv_eintraege(
     FOREIGN KEY(profile_id) REFERENCES profil(profile_id),
     FOREIGN KEY(kategorie_id) REFERENCES kategorien_archiv(kategorie_id),
     FOREIGN KEY(plattform_id) REFERENCES plattform_archiv(plattform_id)
+);
+
+CREATE TABLE kommentare_archiv(
+	comment_id INT auto_increment,
+    post_id INT,
+    profile_id INT,
+    comment VARCHAR(255),
+    commented_at DATETIME,
+    
+    PRIMARY KEY(comment_id),
+    FOREIGN KEY(profile_id) REFERENCES profil(profile_id),
+    FOREIGN KEY(post_id) REFERENCES archiv_eintraege(archiv_item_id)
 );
 
 CREATE TABLE likes_archiv(
