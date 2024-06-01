@@ -11,9 +11,12 @@ DROP VIEW IF EXISTS view_skripte_kommentare_comment;
 DROP VIEW IF EXISTS view_nutzerdaten_reset_password;
 DROP VIEW IF EXISTS view_profil_edit;
 DROP TRIGGER IF EXISTS before_update_profil;
+DROP TRIGGER IF EXISTS before_insert_archiv_eintrag;
+DROP TRIGGER IF EXiSTS before_insert_skripte;
 DROP ROLE IF EXISTS 'moderator';
 DROP ROLE IF EXISTS 'administrator';
-DROP USER IF EXISTS 'testuser'@'localhost';
+DROP USER IF EXISTS 'testmoderator'@'%';
+DROP USER IF EXISTS 'testadministrator'@'%';
 
 CREATE VIEW view_bestaetigte_archiv_eintraege AS
 SELECT * from archiv_eintraege
@@ -115,11 +118,26 @@ BEGIN
     END IF;
 END //
 
+CREATE TRIGGER before_insert_archiv_eintrag
+BEFORE INSERT ON archiv_eintraege
+FOR EACH ROW
+BEGIN
+    SET NEW.approval_status = 0;
+END //
+
+CREATE TRIGGER before_insert_skripte
+BEFORE INSERT ON skripte
+FOR EACH ROW
+BEGIN
+    SET NEW.approval_status = 0;
+END //
+
 DELIMITER ;
 
 CREATE ROLE 'moderator';
 CREATE ROLE 'administrator';
-CREATE USER 'testuser'@'localhost' IDENTIFIED BY 'moderatorarktox2024';
+CREATE USER 'testmoderator'@'%' IDENTIFIED BY 'moderatorarktox2024';
+CREATE USER 'testadministrator'@'%' IDENTIFIED BY 'administratorarktox2024';
 
 GRANT UPDATE, SELECT ON arktox.view_archiv_eintraege_approval_status TO 'moderator';
 GRANT UPDATE, SELECT ON arktox.view_skripte_approval_status TO 'moderator';
@@ -133,6 +151,7 @@ GRANT UPDATE, SELECT ON arktox.view_nutzerdaten_reset_password TO 'administrator
 GRANT UPDATE, SELECT ON arktox.view_profil_edit TO 'administrator';
 GRANT ALL ON version_history TO 'administrator';
 
-GRANT 'moderator' TO 'testuser'@'localhost';
+GRANT 'moderator' TO 'testmoderator'@'%';
+GRANT 'administrator' TO 'testadministrator'@'%';
 
 FLUSH PRIVILEGES;
