@@ -12,7 +12,7 @@ DROP VIEW IF EXISTS view_nutzerdaten_reset_password;
 DROP VIEW IF EXISTS view_profil_edit;
 DROP TRIGGER IF EXISTS before_update_profil;
 DROP TRIGGER IF EXISTS before_insert_archiv_eintrag;
-DROP TRIGGER IF EXiSTS before_insert_skripte;
+DROP TRIGGER IF EXISTS before_insert_skripte;
 DROP PROCEDURE IF EXISTS proc_new_profile;
 DROP ROLE IF EXISTS 'moderator';
 DROP ROLE IF EXISTS 'administrator';
