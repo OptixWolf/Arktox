@@ -28,11 +28,11 @@ SELECT * from skripte
 WHERE approval_status = '1';
 
 CREATE VIEW view_archiv_eintraege_approval_status AS
-SELECT archiv_item_id, approval_status
+SELECT archiv_item_id, title, approval_status
 FROM archiv_eintraege;
 
 CREATE VIEW view_skripte_approval_status AS
-SELECT skript_id, approval_status
+SELECT skript_id, title, approval_status
 FROM skripte;
 
 CREATE VIEW view_archiv_kommentare_comment AS
