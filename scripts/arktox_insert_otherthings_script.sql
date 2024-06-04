@@ -16,8 +16,8 @@ DROP TRIGGER IF EXISTS before_insert_skripte;
 DROP PROCEDURE IF EXISTS proc_new_profile;
 DROP ROLE IF EXISTS 'moderator';
 DROP ROLE IF EXISTS 'administrator';
-DROP USER IF EXISTS 'testmoderator'@'localhost';
-DROP USER IF EXISTS 'testadministrator'@'localhost';
+DROP USER IF EXISTS 'testmoderator'@'%';
+DROP USER IF EXISTS 'testadministrator'@'%';
 
 CREATE VIEW view_bestaetigte_archiv_eintraege AS
 SELECT * from archiv_eintraege
@@ -143,8 +143,8 @@ DELIMITER ;
 
 CREATE ROLE 'moderator';
 CREATE ROLE 'administrator';
-CREATE USER 'testmoderator'@'localhost' IDENTIFIED BY 'moderatorarktox2024';
-CREATE USER 'testadministrator'@'localhost' IDENTIFIED BY 'administratorarktox2024';
+CREATE USER 'testmoderator'@'%' IDENTIFIED BY 'moderatorarktox2024';
+CREATE USER 'testadministrator'@'%' IDENTIFIED BY 'administratorarktox2024';
 
 GRANT UPDATE, SELECT ON arktox.view_archiv_eintraege_approval_status TO 'moderator';
 GRANT UPDATE, SELECT ON arktox.view_skripte_approval_status TO 'moderator';
@@ -158,10 +158,10 @@ GRANT UPDATE, SELECT ON arktox.view_nutzerdaten_reset_password TO 'administrator
 GRANT UPDATE, SELECT ON arktox.view_profil_edit TO 'administrator';
 GRANT ALL ON version_history TO 'administrator';
 
-GRANT 'moderator' TO 'testmoderator'@'localhost';
-GRANT 'administrator' TO 'testadministrator'@'localhost';
+GRANT 'moderator' TO 'testmoderator'@'%';
+GRANT 'administrator' TO 'testadministrator'@'%';
 
-SET DEFAULT ROLE 'moderator' FOR 'testmoderator'@'localhost';
-SET DEFAULT ROLE 'administrator' FOR 'testadministrator'@'localhost';
+SET DEFAULT ROLE 'moderator' FOR 'testmoderator'@'%';
+SET DEFAULT ROLE 'administrator' FOR 'testadministrator'@'%';
 
 FLUSH PRIVILEGES;
