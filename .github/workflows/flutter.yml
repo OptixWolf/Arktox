@@ -1,0 +1,118 @@
+name: Auto Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: clone repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Java
+        uses: actions/setup-java@v3.12.0
+        with:
+          distribution: 'oracle'
+          java-version: '17'
+
+      - name: Set Up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.3'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Create keys.dart file
+        env:
+          HOST: ${{ secrets.HOST }}
+          PORT: ${{ secrets.PORT }}
+          USER: ${{ secrets.USER }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          DATABASENAME: ${{ secrets.DATABASENAME }}
+        run: |
+          cat <<EOF > lib/keys.dart
+          const host = '$HOST';
+          const port = $PORT;
+          const user = '$USER';
+          const password = '$PASSWORD';
+          const databaseName = '$DATABASENAME';
+          EOF
+
+      - name: Build Android
+        if: runner.os == 'Linux'
+        run: |
+          flutter build apk --release
+          flutter build apk --release --split-per-abi
+
+      - name: Build IOS
+        if: runner.os == 'macOS'
+        run: flutter build ipa --no-codesign
+
+      - name: Compress Archives and IPAs
+        if: runner.os == 'macOS'
+        run: tar -czf build/ios_build.tar.gz build/ios
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Releases-${{ matrix.os }}
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            build/app/outputs/flutter-apk/app-x86_64-release.apk
+            build/ios_build.tar.gz
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v4
+
+      - name: Extract version from pubspec.yaml
+        id: extract_version
+        run: |
+          version=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
+          echo "VERSION=$version" >> $GITHUB_ENV
+
+      - name: Check if Tag Exists
+        id: check_tag
+        run: |
+          if git rev-parse "v${{ env.VERSION }}" >/dev/null 2>&1; then
+            echo "TAG_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "TAG_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Modify Tag
+        if: env.TAG_EXISTS == 'true'
+        id: modify_tag
+        run: |
+          new_version="${{ env.VERSION }}-build-${{ github.run_number }}"
+          echo "VERSION=$new_version" >> $GITHUB_ENV
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all_artifacts
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "all_artifacts/**/*"
+          skipIfReleaseExists: true
+          tag: v${{ env.VERSION }}
+          token: ${{ secrets.TOKEN }}
