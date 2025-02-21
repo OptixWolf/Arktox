@@ -10,7 +10,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
     
@@ -55,14 +55,6 @@ jobs:
           flutter build apk --release
           flutter build apk --release --split-per-abi
 
-      - name: Build IOS
-        if: runner.os == 'macOS'
-        run: flutter build ipa --no-codesign
-
-      - name: Compress Archives and IPAs
-        if: runner.os == 'macOS'
-        run: tar -czf build/ios_build.tar.gz build/ios
-
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -72,7 +64,6 @@ jobs:
             build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             build/app/outputs/flutter-apk/app-x86_64-release.apk
-            build/ios_build.tar.gz
 
   release:
     needs: build
