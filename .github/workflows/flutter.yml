@@ -114,8 +114,9 @@ jobs:
         with:
           artifacts: "all_artifacts/**/*"
           skipIfReleaseExists: true
-          tag: Release ${{ env.VERSION }}
+          tag: ${{ env.VERSION }}
           token: ${{ secrets.TOKEN }}
+          name: "Release ${{ env.VERSION }}"
           body: |
             Wähle unten den passenden Download für dich aus.
 
