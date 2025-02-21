@@ -1,0 +1,2 @@
+C:/Users/OptixWolf/Nextcloud/Projekte/Flutter/project_arktox/android/app/.cxx/RelWithDebInfo/406r3i2r/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/OptixWolf/Nextcloud/Projekte/Flutter/project_arktox/android/app/.cxx/RelWithDebInfo/406r3i2r/armeabi-v7a/CMakeFiles/rebuild_cache.dir

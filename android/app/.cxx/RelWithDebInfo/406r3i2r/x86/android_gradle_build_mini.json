@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "C:\\Users\\OptixWolf\\flutter\\packages\\flutter_tools\\gradle\\src\\main\\groovy\\CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "C:\\Users\\OptixWolf\\AppData\\Local\\Android\\sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+      "-C",
+      "C:\\Users\\OptixWolf\\Nextcloud\\Projekte\\Flutter\\project_arktox\\android\\app\\.cxx\\RelWithDebInfo\\406r3i2r\\x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "C:\\Users\\OptixWolf\\AppData\\Local\\Android\\sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+    "-C",
+    "C:\\Users\\OptixWolf\\Nextcloud\\Projekte\\Flutter\\project_arktox\\android\\app\\.cxx\\RelWithDebInfo\\406r3i2r\\x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}
